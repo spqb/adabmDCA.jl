@@ -1,8 +1,8 @@
 # module utils 
 
-    # using Base.Threads
-    # using Random
-    # using StatsBase
+    using Base.Threads
+    using Random
+    using StatsBase
 
 
 
