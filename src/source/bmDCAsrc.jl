@@ -148,7 +148,7 @@ using .utils
 
 # FIT MODEL ########################################################################################################################################################################
 
-     function fit(datapath, alphabet, weights, nchains, pseudo_count, lr, nepochs, nsweeps, outputpath, target, graph, path_params, path_chains, label, method, seed) # nsave
+     function fit_bmDCA(datapath, alphabet, weights, nchains, pseudo_count, lr, nepochs, nsweeps, outputpath, target, graph, path_params, path_chains, label, method, seed) # nsave
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
         path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
         logfile = open(path_log, "w"); redirect_stdout(logfile)
@@ -223,4 +223,5 @@ using .utils
         close(logfile)
     end
 
+    export fit_bmDCA
 end

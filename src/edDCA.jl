@@ -1,8 +1,9 @@
 using Pkg
 
 # Pkg.activate("DCA_env")
-include("src/edDCAsrc.jl")
+include("source/edDCAsrc.jl")
 
+using .edDCAsrc
 using ArgParse
 using Base.Threads
 
@@ -85,76 +86,6 @@ function parse_commandline()
             arg_type = Int
             default = 10000
             help = "(Defaults to 10000). Maximum number of convergence step."
-
-
-
-
-
-        # "-d", "--data"
-        #     arg_type = String
-        #     required = true
-        #     help = "Filename of the dataset to be used for training the model."
-        # "-o", "--output"
-        #     arg_type = String
-        #     default = "DCA_model"
-        #     help = "(Defaults to DCA_model). Path to the folder where to save the model."
-        # "-w", "--weights"
-        #     arg_type = String
-        #     default = nothing
-        #     help = "(Defaults to None). Path to the file containing the weights of the sequences. If None, the weights are computed automatically."
-        # "-p", "--path_params"
-        #     arg_type = String
-        #     default = nothing
-        #     help = "(Defaults to None) Path to the file containing the model's parameters. Required for restoring the training."
-        # "-c", "--path_chains"
-        #     arg_type = String
-        #     default = nothing
-        #     help = "(Defaults to None) Path to the fasta file containing the model's chains. Required for restoring the training."
-        # "--alphabet"
-        #     arg_type = String
-        #     default = nothing
-        #     help = "(Defaults to protein). Type of encoding for the sequences. Choose among ['protein', 'rna', 'dna'] or a user-defined string of tokens."
-        # "--lr"                 
-        #     arg_type = Float64
-        #     default = 0.01
-        #     help = "(Defaults to 0.01). Learning rate."
-        # "--nsweeps"
-        #     arg_type = Int
-        #     default = 10
-        #     help = "(Defaults to 10). Number of Gibbs steps for each gradient estimation."
-        # "--nchains"
-        #     arg_type = Int
-        #     default = 5_000
-        #     help = "(Defaults to 5_000). Number of Markov chains to run in parallel."
-        # "--target"
-        #     arg_type = Float64
-        #     default = 0.95
-        #     help = "(Defaults to 0.95). Pearson correlation coefficient on the two-points statistics to be reached."
-        # "--nepochs"
-        #     arg_type = Int
-        #     default = 50_000
-        #     help = "(Defaults to 50_000). Maximum number of epochs allowed."
-        # "--pseudocount"
-        #     arg_type = Float32
-        #     default = nothing
-        #     help = "(Defaults to None). Pseudo count for the single and two points statistics. If None, it is set to 1/Meff."   
-        # "--nsave"
-        #     arg_type = Int
-        #     default = 1
-        #     help = "(Defaults to 1). Number of models to save during the training."
-        # "--nthreads"
-        #     arg_type = Int
-        #     default = 1
-        #     help = "(Defaults to 1). Number of threads used."
-        
-        # "--label"
-        #     arg_type = String
-        #     default = nothing
-        #     help = "label"
-        # "--sampler"
-        #     arg_type = String
-        #     default = "gibbs"
-        #     help = "sampler can be both: metropolis or gibbs"
     end
     return parse_args(s)
 end
@@ -164,14 +95,12 @@ Threads.nthreads() = args["nthreads"]
 println("used threads: ", Threads.nthreads(), "\n"); flush(stdout)
 
 function main(args)
-
-    
     println("Parsed args:"); flush(stdout)
     for (arg,val) in args
         println("  $arg  =>  $val"); flush(stdout)
     end
     println("\n"); flush(stdout)
-    edDCAsrc.fit(args["data"], args["path_params"], args["path_chains"], args["density"],  args["target"], args["drate"], args["lr"], args["nsweeps"], args["nchains"], args["alphabet"], args["weights"], args["pseudocount"], args["nepochs"], args["output"], args["max_convergence_step"], args["label"], args["sampler"], args["seed"])
+    fit_edDCA(args["data"], args["path_params"], args["path_chains"], args["density"],  args["target"], args["drate"], args["lr"], args["nsweeps"], args["nchains"], args["alphabet"], args["weights"], args["pseudocount"], args["nepochs"], args["output"], args["max_convergence_step"], args["label"], args["sampler"], args["seed"])
 end
 
 main(args)

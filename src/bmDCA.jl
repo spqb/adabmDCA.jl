@@ -1,8 +1,9 @@
 using Pkg
 
 # Pkg.activate("DCA_env")
-include("src/bmDCAsrc.jl")
+include("source/bmDCAsrc.jl")
 
+using .bmDCAsrc
 using ArgParse
 using Base.Threads
 
@@ -93,7 +94,7 @@ function main(args)
         println("  $arg  =>  $val")
     end
     println("\n"); flush(stdout)
-    bmDCAsrc.fit(args["data"], args["alphabet"], args["weights"], args["nchains"], args["pseudocount"], args["lr"], args["nepochs"], args["nsweeps"], args["output"], args["target"], args["graph"], args["path_params"], args["path_chains"], args["label"], args["sampler"], args["seed"])
+    fit_bmDCA(args["data"], args["alphabet"], args["weights"], args["nchains"], args["pseudocount"], args["lr"], args["nepochs"], args["nsweeps"], args["output"], args["target"], args["graph"], args["path_params"], args["path_chains"], args["label"], args["sampler"], args["seed"])
 end
 
 main(args)

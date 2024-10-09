@@ -1,8 +1,9 @@
 using Pkg
 
 # Pkg.activate("DCA_env")
-include("src/resamplesrc.jl")
+include("source/resamplesrc.jl")
 
+using .resamplesrc
 using ArgParse
 using Base.Threads
 
@@ -92,8 +93,7 @@ function main(args)
         println("  $arg  =>  $val")
     end
     println("\n"); flush(stdout)
-    resample.resampling_final(args["data"], args["alphabet"], args["weights"], args["nchains"], args["pseudocount"], args["nepochs"], args["nsweeps"], args["output"],  args["path_params"], args["nmeasure"], args["nmix"], args["no_mixingtime"], args["label"], args["showplot"], args["seed"], args["sampler"])
-    # resample.resampling_old(args["data"], args["alphabet"], args["weights"], args["nchains"], args["pseudocount"], args["nepochs"], args["nsweeps"], args["output"], args["target"], args["path_params"], args["path_chains"], args["mixingtime"],args["label"], args["sampler"])
+    sample_DCA(args["data"], args["alphabet"], args["weights"], args["nchains"], args["pseudocount"], args["nepochs"], args["nsweeps"], args["output"],  args["path_params"], args["nmeasure"], args["nmix"], args["no_mixingtime"], args["label"], args["showplot"], args["seed"], args["sampler"])
 end
 
 main(args)

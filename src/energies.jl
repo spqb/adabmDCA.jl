@@ -1,8 +1,9 @@
 using Pkg
 
 # Pkg.activate("DCA_env")
-include("src/utils.jl")
+include("source/utils.jl")
 
+using .utils
 using ArgParse
 using Base.Threads
 
@@ -40,7 +41,7 @@ function main(args)
         println("  $arg  =>  $val")
     end
     println("\n"); flush(stdout)
-    utils.compute_energy_from_fasta(args["path_params"], args["data"], args["output"]) 
+    compute_energy_from_fasta(args["path_params"], args["data"], args["output"]) 
 end
 
 main(args)

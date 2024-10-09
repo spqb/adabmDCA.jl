@@ -233,7 +233,7 @@ using .utils
 
 # FIT MODEL ########################################################################################################################################################################
 
-    function fit(datapath, path_params, path_chains, target_density, target_Cij, drate, lr, nsweeps, nchains, alphabet, weights, pseudo_count, nepochs, outputpath, max_conervgence_step, label, method, seed)
+    function fit_edDCA(datapath, path_params, path_chains, target_density, target_Cij, drate, lr, nsweeps, nchains, alphabet, weights, pseudo_count, nepochs, outputpath, max_conervgence_step, label, method, seed)
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
         path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
         logfile = open(path_log, "w"); redirect_stdout(logfile)
@@ -305,5 +305,7 @@ using .utils
         save_model_chains(J, vbias, filter, v_model, alphabet, outputpath, label)
         close(logfile)
     end
+
+    export fit_edDCA
 
 end

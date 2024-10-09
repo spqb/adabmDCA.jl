@@ -261,7 +261,7 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
 
 
 
-    function resampling_final(datapath, alphabet, weights, nchains, pseudo_count, nepochs, nsweeps, outputpath, path_params, nmeasure, nmix, mixing_time, label, showplot, seed, method)
+    function sample_DCA(datapath, alphabet, weights, nchains, pseudo_count, nepochs, nsweeps, outputpath, path_params, nmeasure, nmix, mixing_time, label, showplot, seed, method)
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
         path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
         logfile = open(path_log, "w"); redirect_stdout(logfile)
@@ -541,5 +541,5 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
         close(decorr_file)
     end
 
-    export sampleDecorrelation, plot_decorrelation, save_fasta
+    export sampleDecorrelation, plot_decorrelation, save_fasta, sample_DCA
 end
