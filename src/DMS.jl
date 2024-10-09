@@ -43,4 +43,4 @@ function main(args)
     compute_DMS_energies(args["path_params"], args["data"], args["output"]) 
 end
 
-main(args)
+# main(args)

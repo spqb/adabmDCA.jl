@@ -97,4 +97,4 @@ function main(args)
     fit_bmDCA(args["data"], args["alphabet"], args["weights"], args["nchains"], args["pseudocount"], args["lr"], args["nepochs"], args["nsweeps"], args["output"], args["target"], args["graph"], args["path_params"], args["path_chains"], args["label"], args["sampler"], args["seed"])
 end
 
-main(args)
+# main(args)

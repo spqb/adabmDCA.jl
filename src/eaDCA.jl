@@ -99,4 +99,4 @@ function main(args)
     fit_eaDCA(args["data"], args["alphabet"], args["weights"], args["nchains"], args["factivate"],args["pseudocount"], args["lr"], args["nepochs"], args["nsweeps"], args["gsteps"], args["output"], args["target"], args["path_params"], args["path_chains"], args["label"], args["sampler"], args["seed"])
 end
 
-main(args)
+# main(args)

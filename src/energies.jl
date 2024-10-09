@@ -44,4 +44,4 @@ function main(args)
     compute_energy_from_fasta(args["path_params"], args["data"], args["output"]) 
 end
 
-main(args)
+# main(args)
