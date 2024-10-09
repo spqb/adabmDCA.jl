@@ -90,9 +90,9 @@ function parse_commandline()
     return parse_args(s)
 end
 
-args = parse_commandline()
-Threads.nthreads() = args["nthreads"]
-println("used threads: ", Threads.nthreads(), "\n"); flush(stdout)
+# args = parse_commandline()
+# Threads.nthreads() = args["nthreads"]
+# println("used threads: ", Threads.nthreads(), "\n"); flush(stdout)
 
 function main(args)
     println("Parsed args:"); flush(stdout)
