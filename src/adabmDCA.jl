@@ -8,7 +8,7 @@ module adabmDCA
     # include("resample.jl")
     include("source/utils.jl")
 
-    using utils
+    # using utils
     # using .bmDCA
     # using .eaDCA
     # using .edDCA
@@ -18,7 +18,7 @@ module adabmDCA
 
 
     # utils 
-    export utils.id #, index_interval
+    export id#, index_interval
     # export linear_division, exponential_division_euler, compute_slope
     # export oneHotEncoding, oneHot2Categorical, oneHot2Categorical2D
     # export remove_autocorrelation, oneHotFreqs, oneHotFij, oneHotFijFast, oneHotFijSymm, oneHotFijSymmFast, oneHotCij, oneHotCijFast
