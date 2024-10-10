@@ -36,8 +36,8 @@ function parse_commandline()
             help = "(Defaults to protein). Type of encoding for the sequences. Choose among ['protein', 'rna', 'dna'] or a user-defined string of tokens."
         "--nsweeps"
             arg_type = Int
-            default = 1
-            help = "(Defaults to 1). Number of Gibbs sweep for each epoch."
+            default = 10
+            help = "(Defaults to 10). Number of Gibbs sweep for each epoch."
         "--sampler"
             arg_type = String
             default = "gibbs"

@@ -1,4 +1,5 @@
-module resample
+# module resample
+
 using Distributions
 using Base.Threads
 using StatsBase
@@ -10,7 +11,7 @@ using Printf
 
 
 include("utils.jl")
-using .utils 
+# using .utils 
 
 # COMPUTE SWITCHING TIME ########################################################################################################################################################################
 
@@ -303,11 +304,11 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
             
             t_mix = 0
             for epoch in 1:nepochs
-                Random.seed!(epoch); v_model, switch_flag = sampling(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling 
+                Random.seed!(epoch); v_model, switch_flag = sampling(J, vbias, contact_list, site_degree, v_model, 1, switch_time, switch_flag, method) # sampling 
                 v_compare = copy(v_model[:, :, shuffle(1:size(v_model, 3))])
                 if epoch % 2 == 0
                     println("\nepoch n: ", div(epoch, 2)); flush(stdout)
-                    Random.seed!(div(epoch, 2)); v_back, switch_flag = sampling(J, vbias, contact_list, site_degree, v_back, nsweeps, switch_time, switch_flag, method) # sampling 
+                    Random.seed!(div(epoch, 2)); v_back, switch_flag = sampling(J, vbias, contact_list, site_degree, v_back, 1, switch_time, switch_flag, method) # sampling 
                     ave1, sigma1 = sampleDecorrelation_andSTD(v_model, v_compare)
                     ave2, sigma2 = sampleDecorrelation_andSTD(v_model, v_back)
                     push!(decorrelation_compare, ave1); push!(decorrelation_back, ave2)
@@ -541,5 +542,5 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
         close(decorr_file)
     end
 
-    export sampleDecorrelation, plot_decorrelation, save_fasta, sample_DCA
-end
+#     export sampleDecorrelation, plot_decorrelation, save_fasta, sample_DCA
+# end

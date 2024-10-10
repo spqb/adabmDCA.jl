@@ -1,18 +1,20 @@
 using Pkg
 
 Pkg.activate("env")
+include("adabmDCA.jl")
+using .adabmDCA
 
-
-include("source/bmDCAsrc.jl")
-
-using .bmDCAsrc
 using ArgParse
 using Base.Threads
 
 
-function parse_commandline_bmDCA()
+function parse_commandline()
     s = ArgParseSettings()
     @add_arg_table s begin
+        "-m", "--model"
+            arg_type = String
+            required = true
+            help = "method."
         "-d", "--data"
             arg_type = String
             required = true
@@ -81,25 +83,72 @@ function parse_commandline_bmDCA()
             arg_type = String
             default = nothing
             help = "External graph on which Boltzmann learning is performed."
+
+        # eaDCA
+        "--gsteps"
+            arg_type = Int
+            default = 10
+            help = "(Defaults to 10). Number of gradient updates between two subsequent coupling activations."
+        "--factivate"
+            arg_type = Float64
+            default = 0.001
+            help = "(Defaults to 100). Fraction of coulings activated at each epoch."
+
+        # edDCA
+        "--density"
+            arg_type = Float64
+            default = 0.02
+            help = "(Defaults to 0.02). Target density to be reached."
+        "--drate"
+            arg_type = Float64
+            default = 0.01
+            help = "(Defaults to 0.01). Fraction of remaining couplings to be pruned at each decimation step."
+        "--max_convergence_step"
+            arg_type = Int
+            default = 10000
+            help = "(Defaults to 10000). Maximum number of convergence step."
+
+        # sample
+        "--no_mixingtime"
+            default = true
+            help = "(Defaults to True) Compute mixing time."
+            action = :store_false
+        "--nmeasure"
+            arg_type = Int
+            default = 5_000
+            help = "Number of Markov chains to run in parallel for mixing time estimation."
+        "--nmix"
+            arg_type = Int
+            default = 2
+            help = "Sampling will be done for a total time of nmix * t_mix"
+        "--showplot"
+            default = false
+            help = "(Defaults to False) show plot"
+            action = :store_true
     end
 
     return parse_args(s)
 end
 
-# args = parse_commandline_bmDCA()
-# Threads.nthreads() = args["nthreads"]
-# println("used threads: ", Threads.nthreads())
+args = parse_commandline()
+Threads.nthreads() = args["nthreads"]
+println("used threads: ", Threads.nthreads())
 
-function train_bmDCA()
-    args = parse_commandline_bmDCA()
-    # Threads.nthreads() = args["nthreads"]
-    println("used threads: ", Threads.nthreads())
-    println("Parsed args:")
-    for (arg,val) in args
-        println("  $arg  =>  $val")
-    end
-    println("\n"); flush(stdout)
+if args["model"] == "bmDCA"
     fit_bmDCA(args["data"], args["alphabet"], args["weights"], args["nchains"], args["pseudocount"], args["lr"], args["nepochs"], args["nsweeps"], args["output"], args["target"], args["graph"], args["path_params"], args["path_chains"], args["label"], args["sampler"], args["seed"])
-end
 
-# main(args)
+elseif args["model"] == "eaDCA"
+    fit_eaDCA(args["data"], args["alphabet"], args["weights"], args["nchains"], args["factivate"],args["pseudocount"], args["lr"], args["nepochs"], args["nsweeps"], args["gsteps"], args["output"], args["target"], args["path_params"], args["path_chains"], args["label"], args["sampler"], args["seed"])
+
+elseif args["model"] == "edDCA"
+    fit_edDCA(args["data"], args["path_params"], args["path_chains"], args["density"],  args["target"], args["drate"], args["lr"], args["nsweeps"], args["nchains"], args["alphabet"], args["weights"], args["pseudocount"], args["nepochs"], args["output"], args["max_convergence_step"], args["label"], args["sampler"], args["seed"])
+
+elseif args["model"] == "sample"
+    sample_DCA(args["data"], args["alphabet"], args["weights"], args["nchains"], args["pseudocount"], args["nepochs"], args["nsweeps"], args["output"],  args["path_params"], args["nmeasure"], args["nmix"], args["no_mixingtime"], args["label"], args["showplot"], args["seed"], args["sampler"])
+
+elseif args["model"] == "energies"
+    compute_energy_from_fasta(args["path_params"], args["data"], args["output"])
+
+elseif args["model"] == "DMS"
+    compute_DMS_energies(args["path_params"], args["data"], args["output"]) 
+end

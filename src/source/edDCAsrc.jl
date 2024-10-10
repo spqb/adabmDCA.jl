@@ -1,4 +1,4 @@
-module edDCAsrc
+# module edDCAsrc
 
 using Base.Threads
 using LinearAlgebra
@@ -7,7 +7,7 @@ using Distances
 using Random
 
 include("utils.jl")
-using .utils 
+# using .utils 
 
 
 
@@ -306,6 +306,6 @@ using .utils
         close(logfile)
     end
 
-    export fit_edDCA
+#     export fit_edDCA
 
-end
+# end

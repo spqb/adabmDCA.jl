@@ -1,4 +1,4 @@
-module eaDCAsrc
+# module eaDCAsrc
 
 using Base.Threads
 using StatsBase
@@ -7,7 +7,7 @@ using Logging
 using Random
 
 include("utils.jl")
-using .utils 
+# using .utils 
 
 
 # COMPUTE SWITCHING TIME ########################################################################################################################################################################
@@ -332,5 +332,5 @@ using .utils
         close(logfile)
     end
 
-    export fit_eaDCA
-end
+#     export fit_eaDCA
+# end

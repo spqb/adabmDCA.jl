@@ -1,4 +1,4 @@
-module bmDCAsrc
+# module bmDCAsrc
 
 using Base.Threads
 using StatsBase
@@ -8,7 +8,7 @@ using Random
 
 
 include("utils.jl")
-using .utils 
+# using .utils 
 
 
 
@@ -223,5 +223,5 @@ using .utils
         close(logfile)
     end
 
-    export fit_bmDCA
-end
+    # export fit_bmDCA
+# end
