@@ -100,10 +100,10 @@
 
 # AVERAGE DISTANCE ########################################################################################################################################################################
 
-    function oneHotHammingDistance(seq1, seq2)
-        length(seq1) == length(seq2) || throw(ArgumentError("Sequences must have same length"))
-        return count(seq1 .!= seq2) / 2
-    end
+    # function oneHotHammingDistance(seq1, seq2)
+    #     length(seq1) == length(seq2) || throw(ArgumentError("Sequences must have same length"))
+    #     return count(seq1 .!= seq2) / 2
+    # end
 
     function averageDistance(v1, v2)
         size(v1) == size(v2) || throw(ArgumentError("Samples must have same size"))

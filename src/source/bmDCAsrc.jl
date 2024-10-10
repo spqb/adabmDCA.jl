@@ -63,7 +63,7 @@
 
 # GRADIENT UPDATE ########################################################################################################################################################################
 
-    function gradient_update(J::Matrix{Float32}, filter, v_model::BitArray{3}, fij_natural, lr, pseudo_count=0)
+    function gradient_update_bm(J::Matrix{Float32}, filter, v_model::BitArray{3}, fij_natural, lr, pseudo_count=0)
         Nq, Nv, Ns = size(v_model)
         fij_model = oneHotFijSymmFast(v_model, ones(Float32, Ns), pseudo_count)
         J .+= lr * ((fij_natural .- fij_model) .* filter)
@@ -75,7 +75,7 @@
 
     function do_epoch(J::Matrix{Float32}, vbias::Matrix{Float32}, filter::BitMatrix, contact_list::Matrix{Int64}, site_degree::Vector{Int64}, v_model::BitArray{3}, fij_natural::Matrix{Float32}, lr::Float64, nsweeps::Int64, switch_time::Float64, switch_flag::Bool, method)
         v_model, switch_flag = sampling_bm(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method)
-        J = gradient_update(J, filter, v_model, fij_natural, lr)
+        J = gradient_update_bm(J, filter, v_model, fij_natural, lr)
         GC.gc()
         return J, v_model, switch_flag
     end
@@ -84,41 +84,41 @@
 
 # SAVE AND RESTORE MODEL ########################################################################################################################################################################
 
-    function save_model(J, vbias, v_model, alphabet, save_list, pearsonCij, outputpath)
-        Nq, Nv, Ns = size(v_model)
-        v_cat = oneHot2Categorical(v_model, Nq)
-        # save chains
-        code = string(round(save_list[save_list .<= pearsonCij][end], digits=3))
-        file_chains = open(outputpath * "/trainingchains_pearson" * code * ".fasta", "w")
-        for m in 1:Ns-1
-            head = ">chain $m\n"
-            line = "$(alphabet[v_cat[:, m]])\n"
-            write(file_chains, head); write(file_chains, line)
-        end
-        head = ">chain $Ns\n"; line = "$(alphabet[v_cat[:, Ns]])"
-        write(file_chains, head); write(file_chains, line)
-        close(file_chains)
+    # function save_model(J, vbias, v_model, alphabet, save_list, pearsonCij, outputpath)
+    #     Nq, Nv, Ns = size(v_model)
+    #     v_cat = oneHot2Categorical(v_model, Nq)
+    #     # save chains
+    #     code = string(round(save_list[save_list .<= pearsonCij][end], digits=3))
+    #     file_chains = open(outputpath * "/trainingchains_pearson" * code * ".fasta", "w")
+    #     for m in 1:Ns-1
+    #         head = ">chain $m\n"
+    #         line = "$(alphabet[v_cat[:, m]])\n"
+    #         write(file_chains, head); write(file_chains, line)
+    #     end
+    #     head = ">chain $Ns\n"; line = "$(alphabet[v_cat[:, Ns]])"
+    #     write(file_chains, head); write(file_chains, line)
+    #     close(file_chains)
 
 
-        # save model
-        file_model = open(outputpath * "/model_pearson" * code * ".dat", "w")
-        for i in 1:Nv, j in i+1:Nv
-            for iq in 1:Nq, jq in 1:Nq
-            line = "J $(i-1) $(j-1) $(iq-1) $(jq-1) $(J[id(i, iq, Nq), id(j, jq, Nq)])\n"
-                write(file_model, line)
-            end
-        end
-        for i in 1:Nv, iq in 1:Nq
-            line = "h $(i-1) $(iq-1) $(vbias[iq, i])\n"
-            write(file_model, line)
-        end
-        close(file_model)
-        save_list = save_list[save_list .> pearsonCij]
-        return save_list
-    end
+    #     # save model
+    #     file_model = open(outputpath * "/model_pearson" * code * ".dat", "w")
+    #     for i in 1:Nv, j in i+1:Nv
+    #         for iq in 1:Nq, jq in 1:Nq
+    #         line = "J $(i-1) $(j-1) $(iq-1) $(jq-1) $(J[id(i, iq, Nq), id(j, jq, Nq)])\n"
+    #             write(file_model, line)
+    #         end
+    #     end
+    #     for i in 1:Nv, iq in 1:Nq
+    #         line = "h $(i-1) $(iq-1) $(vbias[iq, i])\n"
+    #         write(file_model, line)
+    #     end
+    #     close(file_model)
+    #     save_list = save_list[save_list .> pearsonCij]
+    #     return save_list
+    # end
 
 
-    function save_new(J, vbias, filter, v_model, alphabet, save_list, nsave, pearsonCij, outputpath, label, n_saved)
+    function save_new_bm(J, vbias, filter, v_model, alphabet, save_list, nsave, pearsonCij, outputpath, label, n_saved)
         Nq, Nv, Ns = size(v_model)
         v_cat = oneHot2Categorical(v_model, Nq)
         # code = string(round(save_list[save_list .<= pearsonCij][end], digits=3))
@@ -137,7 +137,7 @@
     end
 
 
-    function save_model_chains(J, vbias, filter, v_model, alphabet, outputpath, label)
+    function save_model_chains_bm(J, vbias, filter, v_model, alphabet, outputpath, label)
         Nq, Nv, Ns = size(v_model)
         v_cat = oneHot2Categorical(v_model, Nq)
         model_path = (label != nothing) ? outputpath*"/"*label*"_"*"params.dat" : outputpath*"/params.dat"
@@ -208,17 +208,17 @@
                 
                 # if pearsonCij >= save_list[1]
                 #     save_model_chains(J, vbias, filter, v_model, alphabet, outputpath, label)
-                #     # save_list = save_new(J, vbias, filter, v_model, alphabet, save_list, nsave, pearsonCij, outputpath, label, n_saved) 
+                #     # save_list = save_new_bm(J, vbias, filter, v_model, alphabet, save_list, nsave, pearsonCij, outputpath, label, n_saved) 
                 #     # n_saved += 1
                 # end
 
                 println("epoch: ", epoch, " time: ", epoch_time); flush(stdout)
                 println("pearson Cij: ", pearsonCij, ", pearson Fi: ", perasonFi); flush(stdout)
-                (epoch % 50 == 0) ? save_model_chains(J, vbias, filter, v_model, alphabet, outputpath, label) : nothing
+                (epoch % 50 == 0) ? save_model_chains_bm(J, vbias, filter, v_model, alphabet, outputpath, label) : nothing
                 (pearsonCij >= target) ? break : nothing
             end
         end
-        save_model_chains(J, vbias, filter, v_model, alphabet, outputpath, label)
+        save_model_chains_bm(J, vbias, filter, v_model, alphabet, outputpath, label)
         println("training time: ", training_time); flush(stdout)
         close(logfile)
     end

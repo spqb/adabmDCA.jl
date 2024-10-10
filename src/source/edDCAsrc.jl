@@ -112,7 +112,7 @@
 
 # GRADIENT UPDATE ########################################################################################################################################################################
 
-    function gradient_update(J::Matrix{Float32}, filter, v_model::BitArray{3}, fij_natural, pij_model, lr)
+    function gradient_update_ed(J::Matrix{Float32}, filter, v_model::BitArray{3}, fij_natural, pij_model, lr)
         J .+= lr * ((fij_natural .- pij_model) .* filter)
         return J
     end
@@ -120,7 +120,7 @@
 
 # DO ONE EPOCH ########################################################################################################################################################################
     
-    function do_convergence(J, vbias, filter, contact_list, site_degree, v_model, nsweeps, fij_natural, cij_natural, target_cij, lr, pseudo_count, max_conervgence_step, method, switch_time=0, switch_flag=true)
+    function do_convergence_ed(J, vbias, filter, contact_list, site_degree, v_model, nsweeps, fij_natural, cij_natural, target_cij, lr, pseudo_count, max_conervgence_step, method, switch_time=0, switch_flag=true)
         slope_err = 0.5
         cij_model = oneHotCijFast(v_model, ones(size(v_model, 3)), 0) 
         p, slope = cor(vec(cij_model), vec(cij_natural)), compute_slope(cij_model, cij_natural)
@@ -139,7 +139,7 @@
             p, slope = cor(vec(cij_model), vec(cij_natural)), compute_slope(cij_model, cij_natural)
             p_active = cor(vec(cij_model[filter]), vec(cij_natural[filter]))
             println("step: ", count, "; slope: ", slope, ", pearson Cij: ", p, ", pearson Cij active: ", p_active); flush(stdout)
-            J = gradient_update(J, filter, v_model, fij_natural, pij_model, lr) # update parameters
+            J = gradient_update_ed(J, filter, v_model, fij_natural, pij_model, lr) # update parameters
         end
         return J, v_model, pij_model
     end
@@ -156,7 +156,7 @@
 
     function do_epoch(J::Matrix{Float32}, vbias::Matrix{Float32}, filter::BitMatrix, contact_list::Matrix{Int64}, site_degree::Vector{Int64}, v_model::BitArray{3}, fij_natural::Matrix{Float32}, cij_natural::Matrix{Float32}, target_cij, lr::Float64, nsweeps::Int64, pseudo_count, th_d, max_conervgence_step, method)
         # convergence
-        J, v_model, pij_model = do_convergence(J, vbias, filter, contact_list, site_degree, v_model, nsweeps, fij_natural, cij_natural, target_cij, lr, pseudo_count, max_conervgence_step, method)
+        J, v_model, pij_model = do_convergence_ed(J, vbias, filter, contact_list, site_degree, v_model, nsweeps, fij_natural, cij_natural, target_cij, lr, pseudo_count, max_conervgence_step, method)
         # decimation
         J, filter, contact_list, site_degree = do_decimation(J, pij_model, fij_natural, filter, contact_list, site_degree, th_d)
         # sampling with decimated model
@@ -168,39 +168,39 @@
 
 # SAVE AND RESTORE MODEL ########################################################################################################################################################################
 
-    function save_model(J, vbias, v_model, alphabet, save_list, sparsity, pearsonCij, outputpath)
-        Nq, Nv, Ns = size(v_model)
-        v_cat = oneHot2Categorical(v_model, Nq)
-        # save chains
-        code_density = string(round(sparsity, digits=3))
-        code_pearson = string(round(pearsonCij, digits=3))
-        file_chains = open(outputpath * "/trainingchains_density" * code_density * "_pearson" * code_pearson * ".fasta", "w")
-        for m in 1:Ns-1
-            head = ">chain $m\n"
-            line = "$(alphabet[v_cat[:, m]])\n"
-            write(file_chains, head); write(file_chains, line)
-        end
-        head = ">chain $Ns\n"; line = "$(alphabet[v_cat[:, Ns]])"
-        write(file_chains, head); write(file_chains, line)
-        close(file_chains)
-        # save model
-        file_model = open(outputpath * "/model_density" * code_density * "_pearson" * code_pearson * ".dat", "w")
-        for i in 1:Nv, j in i+1:Nv
-            for iq in 1:Nq, jq in 1:Nq
-            line = "J $(i-1) $(j-1) $(iq-1) $(jq-1) $(J[id(i, iq, Nq), id(j, jq, Nq)])\n"
-                write(file_model, line)
-            end
-        end
-        for i in 1:Nv, iq in 1:Nq
-            line = "h $(i-1) $(iq-1) $(vbias[iq, i])\n"
-            write(file_model, line)
-        end
-        close(file_model)
-        save_list = save_list[save_list .> 1-sparsity]
-        return save_list
-    end
+    # function save_model(J, vbias, v_model, alphabet, save_list, sparsity, pearsonCij, outputpath)
+    #     Nq, Nv, Ns = size(v_model)
+    #     v_cat = oneHot2Categorical(v_model, Nq)
+    #     # save chains
+    #     code_density = string(round(sparsity, digits=3))
+    #     code_pearson = string(round(pearsonCij, digits=3))
+    #     file_chains = open(outputpath * "/trainingchains_density" * code_density * "_pearson" * code_pearson * ".fasta", "w")
+    #     for m in 1:Ns-1
+    #         head = ">chain $m\n"
+    #         line = "$(alphabet[v_cat[:, m]])\n"
+    #         write(file_chains, head); write(file_chains, line)
+    #     end
+    #     head = ">chain $Ns\n"; line = "$(alphabet[v_cat[:, Ns]])"
+    #     write(file_chains, head); write(file_chains, line)
+    #     close(file_chains)
+    #     # save model
+    #     file_model = open(outputpath * "/model_density" * code_density * "_pearson" * code_pearson * ".dat", "w")
+    #     for i in 1:Nv, j in i+1:Nv
+    #         for iq in 1:Nq, jq in 1:Nq
+    #         line = "J $(i-1) $(j-1) $(iq-1) $(jq-1) $(J[id(i, iq, Nq), id(j, jq, Nq)])\n"
+    #             write(file_model, line)
+    #         end
+    #     end
+    #     for i in 1:Nv, iq in 1:Nq
+    #         line = "h $(i-1) $(iq-1) $(vbias[iq, i])\n"
+    #         write(file_model, line)
+    #     end
+    #     close(file_model)
+    #     save_list = save_list[save_list .> 1-sparsity]
+    #     return save_list
+    # end
 
-    function save_new(J, vbias, filter, v_model, alphabet, save_list, nsave, density, outputpath, label, n_saved)
+    function save_new_ed(J, vbias, filter, v_model, alphabet, save_list, nsave, density, outputpath, label, n_saved)
         Nq, Nv, Ns = size(v_model)
         v_cat = oneHot2Categorical(v_model, Nq)
         # code_pearson = string(round(pearsonCij, digits=3))
@@ -220,7 +220,7 @@
         return save_list
     end
 
-    function save_model_chains(J, vbias, filter, v_model, alphabet, outputpath, label)
+    function save_model_chains_ed(J, vbias, filter, v_model, alphabet, outputpath, label)
         Nq, Nv, Ns = size(v_model)
         v_cat = oneHot2Categorical(v_model, Nq)
         model_path = (label != nothing) ? outputpath*"/"*label*"_"*"params.dat" : outputpath*"/params.dat"
@@ -297,12 +297,12 @@
                 println("fraction of parameters: ", density); flush(stdout)
                 println("pearson Cij: ", pearsonCij, ", pearson Fi: ", perasonFi); flush(stdout)
                 println("epoch: ", epoch, " time: ", epoch_time, "\n"); flush(stdout)
-                (epoch % 50 == 0) ? save_model_chains(J, vbias, filter, v_model, alphabet, outputpath, label) : nothing
+                (epoch % 50 == 0) ? save_model_chains_ed(J, vbias, filter, v_model, alphabet, outputpath, label) : nothing
                 (density <= target_density) ? break : nothing
             end
         end 
         println("training time: ", training_time); flush(stdout)
-        save_model_chains(J, vbias, filter, v_model, alphabet, outputpath, label)
+        save_model_chains_ed(J, vbias, filter, v_model, alphabet, outputpath, label)
         close(logfile)
     end
 
