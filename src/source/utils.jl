@@ -707,6 +707,7 @@
     function compute_Frobenius_norm(path_params, outputpath, label) 
         path_frobenius = (label != nothing) ? outputpath*"/"*label*"_frobenius.txt" : outputpath * "/frobenius.txt"
         J, vbias, alphabet = read_graph_new(path_params)
+        Nq, Nv = size(vbias)
         frobenius_matrix = zeros(Nv,Nv)
         for i in 1:Nv, j in 1:Nv # zero-sum Gauge
             J[id(i, 1:Nq, Nq), id(j, 1:Nq, Nq)] .+= mean(J[id(i, 1:Nq, Nq), id(j, 1:Nq, Nq)]) .- mean(J[id(i, 1:Nq, Nq), id(j, 1:Nq, Nq)], dims=1) .- mean(J[id(i, 1:Nq, Nq), id(j, 1:Nq, Nq)], dims=2)
