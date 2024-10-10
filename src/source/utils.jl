@@ -705,7 +705,7 @@
 
     # Frobenius Norm 
     function compute_Frobenius_norm(path_params, outputpath, label) 
-        path_frobenius = (label != nothing) ? outputpath*"/"*label*"_frobenius.txt" : model_dir * "/frobenius.txt"
+        path_frobenius = (label != nothing) ? outputpath*"/"*label*"_frobenius.txt" : outputpath * "/frobenius.txt"
         J, vbias, alphabet = read_graph_new(path_params)
         frobenius_matrix = zeros(Nv,Nv)
         for i in 1:Nv, j in 1:Nv # zero-sum Gauge
