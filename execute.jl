@@ -4,8 +4,8 @@
 # include("src/adabmDCA.jl")
 using adabmDCA
 
-using ArgParse
-using Base.Threads
+# using ArgParse
+# using Base.Threads
 
 
 function parse_commandline()
