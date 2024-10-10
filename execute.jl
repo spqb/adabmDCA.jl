@@ -4,7 +4,7 @@
 # include("src/adabmDCA.jl")
 using adabmDCA
 
-# using ArgParse
+using ArgParse
 # using Base.Threads
 
 
