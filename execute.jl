@@ -1,8 +1,8 @@
-using Pkg
+# using Pkg
 
-Pkg.activate("env")
-include("adabmDCA.jl")
-using .adabmDCA
+# Pkg.activate("env")
+# include("src/adabmDCA.jl")
+using adabmDCA
 
 using ArgParse
 using Base.Threads

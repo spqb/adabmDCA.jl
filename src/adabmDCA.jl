@@ -1,6 +1,6 @@
 module adabmDCA
-    using Pkg
-    Pkg.activate("env")
+    # using Pkg
+    # Pkg.activate("env")
 
     # include("bmDCA.jl")
     # include("eaDCA.jl")

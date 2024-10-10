@@ -70,7 +70,7 @@ esac
 
 export JULIA_NUM_THREADS=32
 # Run the corresponding Julia script with the remaining optional arguments
-julia src/execute.jl -m "$exec" "$SUBCOMMAND""$@" #& disown  # > test.out 
+julia execute.jl -m "$exec" "$SUBCOMMAND""$@" #& disown  # > test.out 
 # export JULIA_NUM_THREADS=32
 # Run the corresponding Julia script with the remaining optional arguments, loading a module first
 # julia -e 'include("src/adabmDCA.jl"); using adamDCA' $train_script "$SUBCOMMAND" "$@" & disown  # > test.out
