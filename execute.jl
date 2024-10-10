@@ -17,7 +17,7 @@ function parse_commandline()
             help = "method."
         "-d", "--data"
             arg_type = String
-            required = true
+            required = false
             help = "Filename of the dataset to be used for training the model."
         "-o", "--output"
             arg_type = String
