@@ -151,4 +151,7 @@ elseif args["model"] == "energies"
 
 elseif args["model"] == "DMS"
     compute_DMS_energies(args["path_params"], args["data"], args["output"]) 
+
+elseif args["model"] == "contacts"
+    compute_Frobenius_norm(args["path_params"], args["output"], args["label"]) 
 end

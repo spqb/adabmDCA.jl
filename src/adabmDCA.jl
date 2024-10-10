@@ -39,6 +39,9 @@ module adabmDCA
     # sample
     export sample_DCA
 
+    # contacts
+    export compute_Frobenius_norm
+
     include("source/utils.jl")
     include("source/bmDCAsrc.jl")
     include("source/eaDCAsrc.jl")

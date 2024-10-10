@@ -1,12 +1,3 @@
-# module utils 
-
-    # using Base.Threads
-    # using Random
-    # using StatsBase
-
-
-
-
 # INDEXING FUNCTION ########################################################################################################################################################################
 
     id(i, a, q) = (i .- 1).*q .+ a  
@@ -696,18 +687,6 @@
         return 
     end
 
-    # function distance_from_MSA(seq, V, Nv)
-    #     Ns = size(V, 1)
-    #     length(seq) == Ns || throw(ArgumentError("Samples must have same size"))
-    #     distances = zeros(Int32, Ns)
-    #     M = 0
-    #     for i in 1:Ns
-    #         distances[i] = Nv - count(seq .!= V[:, i]) / 2 #count(seq .== V[:, i]) 
-    #         M = (distances[i] >= M) ? distances[i] : M
-    #     end
-    #     return M, distances
-    # end
-
     function sample_sid_from_MSA(sample, MSA, Nv)
         Ns, L_msa = size(sample, 2), size(MSA, 2)
         sids = zeros(Int32, Ns)
@@ -724,18 +703,29 @@
     end
 
 
+    # Frobenius Norm 
+    function compute_Frobenius_norm(path_params, outputpath, label) 
+        path_frobenius = (label != nothing) ? outputpath*"/"*label*"_frobenius.txt" : model_dir * "/frobenius.txt"
+        J, vbias, alphabet = read_graph_new(path_params)
+        frobenius_matrix = zeros(Nv,Nv)
+        for i in 1:Nv, j in 1:Nv # zero-sum Gauge
+            J[id(i, 1:Nq, Nq), id(j, 1:Nq, Nq)] .+= mean(J[id(i, 1:Nq, Nq), id(j, 1:Nq, Nq)]) .- mean(J[id(i, 1:Nq, Nq), id(j, 1:Nq, Nq)], dims=1) .- mean(J[id(i, 1:Nq, Nq), id(j, 1:Nq, Nq)], dims=2)
+        end
+        for i in 1:Nv, j in i+1:Nv # frobenius-norm
+            frobenius_matrix[i, j] = norm(J[id(i, 1:Nq, Nq) , id(j, 1:Nq, Nq)], 2)
+        end
+        
+        file_frobenius = open(path_frobenius, "w")
+        for i in 1:Nv, j in i+1:Nv
+            line = "$(i-1) $(j-1) $(frobenius_matrix[i, j])\n"
+            write(file_frobenius, line)
+        end
+        close(file_frobenius)
+    end
 
 
 
+    
 
-#     export id, index_interval
-#     export linear_division, exponential_division_euler, compute_slope
-#     export oneHotEncoding, oneHot2Categorical, oneHot2Categorical2D
-#     export remove_autocorrelation, oneHotFreqs, oneHotFij, oneHotFijFast, oneHotFijSymm, oneHotFijSymmFast, oneHotCij, oneHotCijFast
-#     export read_fasta, read_fasta2, modify_fasta_headers, compute_weights, set_alphabet, read_graph, read_graph_new, initialize_graph, initialize_graph_couplingwise
-#     export sample_from_profile, gibbs_sampling_edgewise, gibbs_sampling_couplingwise, gibbs_sampling, metropolis_sampling, metropolis_sampling_couplingwise
-#     export restore_model, restore_model_new, save_model_new, save_chains_new, old2new_model
-#     export compute_energy, compute_energy_1thread, compute_energy_from_fasta
-#     export assign_natural_weights
-#     export wt2dms, distance_from_MSA, oneHotHammingDistance, sample_sid_from_MSA
-# end
+
+
