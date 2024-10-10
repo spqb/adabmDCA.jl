@@ -545,7 +545,8 @@
     end
 
     function compute_energy_from_fasta(path_params, path_chains, outputpath) 
-        # logfile = open(model_dir * "/adabmDCA.log", "w"); redirect_stdout(logfile)
+        model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
+        file_energy = model_dir * "/energies.fasta"
         inv_temp = 1
         J, vbias, v_model, alphabet = restore_model_new(path_params, path_chains)
         energies = compute_energy(J, vbias, v_model)
@@ -705,7 +706,9 @@
 
     # Frobenius Norm 
     function compute_Frobenius_norm(path_params, outputpath, label) 
+        model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
         path_frobenius = (label != nothing) ? outputpath*"/"*label*"_frobenius.txt" : outputpath * "/frobenius.txt"
+        
         J, vbias, alphabet = read_graph_new(path_params)
         Nq, Nv = size(vbias)
         frobenius_matrix = zeros(Nv,Nv)
