@@ -2,27 +2,24 @@ module adabmDCA
     # using Pkg
     # Pkg.activate("env")
 
-    # include("bmDCA.jl")
-    # include("eaDCA.jl")
-    # include("edDCA.jl")
-    # include("DMS.jl")
-    # include("energies.jl")
-    # include("resample.jl")
-
     
+
+    using Base.Threads
+    using StatsBase
+    using Logging
+    using Random
+    using Distances
+    using LinearAlgebra
+    using Distributions
+    using Plots
+    using Printf
+
     include("source/utils.jl")
     include("source/bmDCAsrc.jl")
     include("source/eaDCAsrc.jl")
     include("source/edDCAsrc.jl")
     include("source/resamplesrc.jl")
-    # using utils
-    # using .bmDCA
-    # using .eaDCA
-    # using .edDCA
-    # using .DMS
-    # using .energies
-    # using .resample
-
+ 
 
     # utils 
     export id, index_interval
