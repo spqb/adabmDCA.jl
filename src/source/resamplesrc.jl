@@ -1,16 +1,16 @@
 # module resample
 
-using Distributions
-using Base.Threads
-using StatsBase
-using Distances
-using Random
-using Plots
-using Printf
+# using Distributions
+# using Base.Threads
+# using StatsBase
+# using Distances
+# using Random
+# using Plots
+# using Printf
 
 
 
-include("utils.jl")
+# include("utils.jl")
 # using .utils 
 
 # COMPUTE SWITCHING TIME ########################################################################################################################################################################
