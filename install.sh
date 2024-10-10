@@ -1,6 +1,7 @@
 #!/bin/bash
 
-wget -O adabmDCA.sh
+wget -O adabmDCA.sh https://raw.githubusercontent.com/spqb/adabmDCA.jl/refs/heads/main/adabmDCA.sh
+wget -O execute.jl https://raw.githubusercontent.com/spqb/adabmDCA.jl/refs/heads/main/execute.jl
 
 chmod +x adabmDCA.sh
 
