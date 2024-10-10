@@ -13,12 +13,6 @@ module adabmDCA
     using Distributions
     using Plots
     using Printf
-
-    include("source/utils.jl")
-    include("source/bmDCAsrc.jl")
-    include("source/eaDCAsrc.jl")
-    include("source/edDCAsrc.jl")
-    include("source/resamplesrc.jl")
  
 
     # utils 
@@ -44,5 +38,11 @@ module adabmDCA
 
     # sample
     export sample_DCA
+
+    include("source/utils.jl")
+    include("source/bmDCAsrc.jl")
+    include("source/eaDCAsrc.jl")
+    include("source/edDCAsrc.jl")
+    include("source/resamplesrc.jl")
 
 end
