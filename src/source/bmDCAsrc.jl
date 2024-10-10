@@ -15,7 +15,7 @@
 
 # COMPUTE SWITCHING TIME ########################################################################################################################################################################
 
-    function compute_sampling_switch_time(J, vbias, v_model, nsweeps, method)
+    function compute_sampling_switch_time_bm(J, vbias, v_model, nsweeps, method)
         println("computing sampling switch time..."); flush(stdout)
         sampling_function = method == "metropolis" ? metropolis_sampling : gibbs_sampling
         Nq, Nv, Ns = size(v_model) 
@@ -37,7 +37,7 @@
 
 # SAMPLING FUNCTIONS ########################################################################################################################################################################
 
-    function sampling(J, vbias, contact_list, site_degree, v_model::BitArray{3}, nsweeps, switch_time, switch_flag, method)
+    function sampling_bm(J, vbias, contact_list, site_degree, v_model::BitArray{3}, nsweeps, switch_time, switch_flag, method)
         sampling_function = method == "metropolis" ? metropolis_sampling : gibbs_sampling
         sampling_function_edgewise = gibbs_sampling_edgewise
 
@@ -74,7 +74,7 @@
 # DO ONE EPOCH ########################################################################################################################################################################
 
     function do_epoch(J::Matrix{Float32}, vbias::Matrix{Float32}, filter::BitMatrix, contact_list::Matrix{Int64}, site_degree::Vector{Int64}, v_model::BitArray{3}, fij_natural::Matrix{Float32}, lr::Float64, nsweeps::Int64, switch_time::Float64, switch_flag::Bool, method)
-        v_model, switch_flag = sampling(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method)
+        v_model, switch_flag = sampling_bm(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method)
         J = gradient_update(J, filter, v_model, fij_natural, lr)
         GC.gc()
         return J, v_model, switch_flag
@@ -194,7 +194,7 @@
         # save_list = (restore == true) ? save_list[save_list .> pearsonCij] : save_list
        
         # compute switch time
-        switch_time, switch_flag = (graph != nothing) ? (compute_sampling_switch_time(J, vbias, v_model, nsweeps, method), false) : 0.0, true
+        switch_time, switch_flag = (graph != nothing) ? (compute_sampling_switch_time_bm(J, vbias, v_model, nsweeps, method), false) : 0.0, true
        
         # training
         n_saved = 1

@@ -14,7 +14,7 @@
 
 # COMPUTE SWITCHING TIME ########################################################################################################################################################################
 
-    function compute_sampling_switch_time(J, vbias, v_model, nsweeps, method)
+    function compute_sampling_switch_time_ed(J, vbias, v_model, nsweeps, method)
         println("computing sampling switch time..."); flush(stdout)
         sampling_function = method == "metropolis" ? metropolis_sampling : gibbs_sampling
         Nq, Nv, Ns = size(v_model) 
@@ -36,7 +36,7 @@
 
 # SAMPLING FUNCTIONS ########################################################################################################################################################################
 
-    function sampling(J, vbias, contact_list, site_degree, v_model::BitArray{3}, nsweeps, switch_time, switch_flag, method)
+    function sampling_ed(J, vbias, contact_list, site_degree, v_model::BitArray{3}, nsweeps, switch_time, switch_flag, method)
         Nq, Nv, Ns = size(v_model) 
         sampling_function = method == "metropolis" ? metropolis_sampling : gibbs_sampling
         sampling_function_couplingwise = method == "metropolis" ? metropolis_sampling_couplingwise : gibbs_sampling_couplingwise
@@ -132,7 +132,7 @@
         
         while (count <= max_conervgence_step) && (!(p <= target_cij) && (abs(slope - 1) > slope_err) || (p <= target_cij))
             count += 1
-            v_model, _ = sampling(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method)
+            v_model, _ = sampling_ed(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method)
             pij_model = oneHotFijSymmFast(v_model, ones(Float32, Ns), 0)
             cij_model = oneHotCijFast(v_model, ones(size(v_model, 3)), 0) 
             exp_eps = maximum(abs.(cij_natural .- cij_model))

@@ -12,7 +12,7 @@
 
 # COMPUTE SWITCHING TIME ########################################################################################################################################################################
 
-    function compute_sampling_switch_time(J, vbias, v_model, nsweeps, method)
+    function compute_sampling_switch_time_ea(J, vbias, v_model, nsweeps, method)
         println("computing sampling switch time...")
         sampling_function = method == "metropolis" ? metropolis_sampling : gibbs_sampling
         Nq, Nv, Ns = size(v_model) 
@@ -34,7 +34,7 @@
 
 # SAMPLING FUNCTIONS ########################################################################################################################################################################
 
-    function sampling(J, vbias, contact_list, site_degree, v_model::BitArray{3}, nsweeps, switch_time, switch_flag, method)
+    function sampling_ea(J, vbias, contact_list, site_degree, v_model::BitArray{3}, nsweeps, switch_time, switch_flag, method)
         sampling_function = method == "metropolis" ? metropolis_sampling : gibbs_sampling
         sampling_function_couplingwise = method == "metropolis" ? metropolis_sampling_couplingwise : gibbs_sampling_couplingwise
         Nq, Nv, Ns = size(v_model) 
@@ -132,7 +132,7 @@
         
         while (count <= max_conervgence_step) && (!(p <= target_cij) && (abs(slope - 1) > slope_err) || (p <= target_cij))
             count += 1
-            v_model, _ = sampling(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method)
+            v_model, _ = sampling_ea(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method)
             pij_model = oneHotFijSymmFast(v_model, ones(Float32, Ns), 0)
             cij_model = oneHotCijFast(v_model, ones(size(v_model, 3)), 0) 
             cij_model_act, cij_natural_act = filter .* cij_model, filter .* cij_natural
@@ -145,7 +145,7 @@
 
     function do_epoch(J::Matrix{Float32}, vbias::Matrix{Float32}, n_couplings::Float64, filter::BitMatrix, contact_list::Matrix{Int64}, site_degree::Vector{Int64}, v_model::BitArray{3}, fij_natural::Matrix{Float32}, lr::Float64, nsweeps::Int64, n_gradsteps::Int64, pseudo_count, switch_time::Float64, switch_flag::Bool, method)
         Nq, Nv, Ns = size(v_model)
-        v_model, switch_flag = sampling(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling
+        v_model, switch_flag = sampling_ea(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling
         pij_model = oneHotFijSymmFast(v_model, ones(Float32, Ns), pseudo_count) # compute 2-point frequencies
 
 
@@ -157,7 +157,7 @@
         filter, contact_list, site_degree = update_graph(chosen_couplings, filter, contact_list, site_degree) # update filter & contact list & site degree
         J = gradient_update(J, filter, v_model, fij_natural, pij_model, lr) # update parameters
         for step in 2:n_gradsteps
-            v_model, switch_flag = sampling(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling 
+            v_model, switch_flag = sampling_ea(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling 
             pij_model = oneHotFijSymmFast(v_model, ones(Float32, Ns), 0) # compute 2-point frequencies
             J = gradient_update(J, filter, v_model, fij_natural, pij_model, lr) # update parameters
         end
@@ -168,7 +168,7 @@
 
     function do_epoch_with_convergence(J::Matrix{Float32}, vbias::Matrix{Float32}, n_couplings::Float64, filter::BitMatrix, contact_list::Matrix{Int64}, site_degree::Vector{Int64}, v_model::BitArray{3}, fij_natural::Matrix{Float32}, cij_natural::Matrix{Float32}, target_cij, lr::Float64, nsweeps::Int64, n_gradsteps::Int64, max_conervgence_step::Int64, pseudo_count, switch_time::Float64, switch_flag::Bool, method)
         Nq, Nv, Ns = size(v_model)
-        v_model, switch_flag = sampling(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling
+        v_model, switch_flag = sampling_ea(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling
         pij_model = oneHotFijSymmFast(v_model, ones(Float32, Ns), pseudo_count) # compute 2-point frequencies
 
         Ntot = div(Nv * (Nv-1), 2) * Nq*Nq 
@@ -297,7 +297,7 @@
         # save_list = (restore == true) ? save_list[save_list .> pearsonCij] : save_list
         
         # conpute switch time
-        switch_time, switch_flag = compute_sampling_switch_time(J, vbias, v_model, nsweeps, method), false
+        switch_time, switch_flag = compute_sampling_switch_time_ea(J, vbias, v_model, nsweeps, method), false
 
         # training
         n_saved = 1

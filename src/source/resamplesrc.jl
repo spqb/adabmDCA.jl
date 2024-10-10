@@ -15,7 +15,7 @@
 
 # COMPUTE SWITCHING TIME ########################################################################################################################################################################
 
-    function compute_sampling_switch_time(J, vbias, v_model, nsweeps)
+    function compute_sampling_switch_time_re(J, vbias, v_model, nsweeps)
         println("computing sampling switch time..."); flush(stdout)
         Nq, Nv, Ns = size(v_model) 
         useless1, useless2 = copy(v_model), copy(v_model)
@@ -36,7 +36,7 @@
 
 # SAMPLING FUNCTIONS ########################################################################################################################################################################
 
-    function sampling(J, vbias, contact_list, site_degree, v_model::BitArray{3}, nsweeps, switch_time, switch_flag, method)
+    function sampling_sa(J, vbias, contact_list, site_degree, v_model::BitArray{3}, nsweeps, switch_time, switch_flag, method)
         sampling_function = method == "metropolis" ? metropolis_sampling : gibbs_sampling
         sampling_function_couplingwise = method == "metropolis" ? metropolis_sampling_couplingwise : gibbs_sampling_couplingwise
         Nq, Nv, Ns = size(v_model) 
@@ -213,13 +213,13 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
         switch_time, switch_flag = 0, true
         decorr_time = 0
         for epoch in 1:nepochs
-            Random.seed!(epoch); v_model, switch_flag = sampling(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling 
+            Random.seed!(epoch); v_model, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling 
             
             
             v_compare = copy(v_model[:, :, shuffle(1:size(v_model, 3))])
             if epoch % 2 == 0
                 println("sweep n: ", div(epoch, 2)); flush(stdout)
-                Random.seed!(div(epoch, 2)); v_back, switch_flag = sampling(J, vbias, contact_list, site_degree, v_back, nsweeps, switch_time, switch_flag, method) # sampling 
+                Random.seed!(div(epoch, 2)); v_back, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_back, nsweeps, switch_time, switch_flag, method) # sampling 
                 push!(decorrelation_compare, sampleDecorrelation(v_model, v_compare)); push!(decorrelation_back, sampleDecorrelation(v_model, v_back))
                 println("1-average_distance - independent chains: ", round(decorrelation_compare[end], digits=4) , ", chains after t: ", round(decorrelation_back[end], digits=4)); flush(stdout)
                 plot_decorrelation(decorrelation_compare, decorrelation_back, epoch, outputpath)
@@ -241,7 +241,7 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
 
         v = cat(v_model, v_back, dims=3)
         for i in 1:decorr_time
-            v, switch_flag = sampling(J, vbias, contact_list, site_degree, v, nsweeps, switch_time, switch_flag, method)
+            v, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v, nsweeps, switch_time, switch_flag, method)
             if datapath != nothing
                 cij_model = oneHotCijFast(v, ones(Float32, size(v, 3)), 0) 
                 pearsonCij, pearsonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))
@@ -304,11 +304,11 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
             
             t_mix = 0
             for epoch in 1:nepochs
-                Random.seed!(epoch); v_model, switch_flag = sampling(J, vbias, contact_list, site_degree, v_model, 1, switch_time, switch_flag, method) # sampling 
+                Random.seed!(epoch); v_model, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_model, 1, switch_time, switch_flag, method) # sampling 
                 v_compare = copy(v_model[:, :, shuffle(1:size(v_model, 3))])
                 if epoch % 2 == 0
                     println("\nepoch n: ", div(epoch, 2)); flush(stdout)
-                    Random.seed!(div(epoch, 2)); v_back, switch_flag = sampling(J, vbias, contact_list, site_degree, v_back, 1, switch_time, switch_flag, method) # sampling 
+                    Random.seed!(div(epoch, 2)); v_back, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_back, 1, switch_time, switch_flag, method) # sampling 
                     ave1, sigma1 = sampleDecorrelation_andSTD(v_model, v_compare)
                     ave2, sigma2 = sampleDecorrelation_andSTD(v_model, v_back)
                     push!(decorrelation_compare, ave1); push!(decorrelation_back, ave2)
@@ -338,7 +338,7 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
 
         for i in 1:ntot
             println("\nepoch n: ", i); flush(stdout)
-            v, switch_flag = sampling(J, vbias, contact_list, site_degree, v, nsweeps, switch_time, switch_flag, method)
+            v, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v, nsweeps, switch_time, switch_flag, method)
             cij_model = oneHotCijFast(v, ones(Float32, size(v, 3)), 0) 
             pearsonCij, pearsonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))
             println("pearson Cij: ", pearsonCij, ", pearson Fi: ", pearsonFi); flush(stdout)
@@ -404,7 +404,7 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
         end
     
         # compute switch time
-        switch_time, switch_flag = compute_sampling_switch_time(J, vbias, v_model, nsweeps), false
+        switch_time, switch_flag = compute_sampling_switch_time_re(J, vbias, v_model, nsweeps), false
 
         cross_epoch, cross_flag = 0, false
         epoch, correlated = 1, true
@@ -413,7 +413,7 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
             if mixing_time == true
                 v = cat(v_model, v_compare, dims=3)
                 time = @elapsed begin
-                v, switch_flag = sampling(J, vbias, contact_list, site_degree, v, nsweeps, switch_time, switch_flag, method)
+                v, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v, nsweeps, switch_time, switch_flag, method)
                 end
                 println("sampled time: ", time); flush(stdout)
                 v_model, v_compare = v[:, :, 1:sample_size], v[:, :, sample_size+1:end]
@@ -430,7 +430,7 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
                 (epoch == 2*cross_epoch) ? correlated = false : nothing
                 epoch += 1
             else
-                v_model, switch_flag = sampling(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling 
+                v_model, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling 
             end
             if datapath != nothing
                 cij_model = oneHotCijFast(v_model, model_weights, pseudo_count) 
@@ -489,7 +489,7 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
         end
     
         # compute switch time
-        # switch_time, switch_flag = compute_sampling_switch_time(J, vbias, v_model, nsweeps), false
+        # switch_time, switch_flag = compute_sampling_switch_time_re(J, vbias, v_model, nsweeps), false
         switch_flag, switch_time = true, 0
 
         cross_epoch, cross_flag = 0, false
@@ -499,7 +499,7 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
             if mixing_time == true
                 v_mt = cat(v_model_mt, v_nat_mt, dims=3)
                 time = @elapsed begin
-                    v_mt, switch_flag = sampling(J, vbias, contact_list, site_degree, v_mt, nsweeps, switch_time, switch_flag, method)
+                    v_mt, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_mt, nsweeps, switch_time, switch_flag, method)
                 end
                 println("sampling time: ", time); flush(stdout)
 
@@ -517,7 +517,7 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
                 plot_decorrelation(decorrelation_model, decorrelation_nat, epoch, outputpath)
                 epoch += 1
             else
-                v_model, switch_flag = sampling(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling 
+                v_model, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling 
             end
             if datapath != nothing
                 cij_model = oneHotCijFast(v_model_mt, model_weights, 0) 
@@ -530,7 +530,7 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
         println("\nMIXING TIME COMPUTED: ", cross_epoch ,"\n")
         v_model = sample_from_profile(vbias, nchains)
         for epoch in 1:(2*cross_epoch)
-            v_model, switch_flag = sampling(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method)
+            v_model, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method)
             cij_model = oneHotCijFast(v_model, ones(Float32, nchains), 0) 
             pearsonCij, pearsonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))
             println("pearson Cij: ", pearsonCij, ", pearson Fi: ", pearsonFi, "\n"); flush(stdout)
