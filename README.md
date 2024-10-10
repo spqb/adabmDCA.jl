@@ -1,7 +1,3 @@
-Here's a draft for the README of your GitHub package "adabmDCA 2.0":
-
----
-
 # adabmDCA 2.0
 
 ## Overview
@@ -94,6 +90,3 @@ If you use this package in your research, please cite:
 
 > Rosset, L., Netti, R., Muntoni, A.P., Weigt, M., & Zamponi, F. (2024). adabmDCA 2.0: A flexible but easy-to-use package for Direct Coupling Analysis.
 
---- 
-
-Feel free to adjust any part of the text!
