@@ -1,11 +1,11 @@
 # adabmDCA 2.0 - Direct Coupling Analysis in Julia
 
 **Authors:**  
-- Lorenzo Rosset (Sorbonne Université, Sapienza Università di Roma)
-- Roberto Netti (Sorbonne Université)
-- Anna Paola Muntoni (Politecnico di Torino)
-- Martin Weigt (Sorbonne Université)
-- Francesco Zamponi (Sapienza Università di Roma)
+- **Lorenzo Rosset** (Sorbonne Université, Sapienza Università di Roma)
+- **Roberto Netti** (Sorbonne Université)
+- **Anna Paola Muntoni** (Politecnico di Torino)
+- **Martin Weigt** (Sorbonne Université)
+- **Francesco Zamponi** (Sapienza Università di Roma)
   
 **Maintainer:** Roberto Netti
 
