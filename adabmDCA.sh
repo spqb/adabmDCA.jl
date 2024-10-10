@@ -62,6 +62,9 @@ case "$COMMAND" in
   DMS)
     exec="DMS"
     ;;
+  contacts)
+    exec="contacts"
+    ;;
   *)
     echo "Error: Invalid command '$COMMAND'. Use 'train', 'decimate' or 'sample'."
     exit 1
