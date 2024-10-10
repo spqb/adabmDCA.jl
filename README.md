@@ -5,7 +5,7 @@ Here's a draft of your README in English for your GitHub package in Julia:
 # adabmDCA 2.0 - Direct Coupling Analysis in Julia
 
 **Authors:**  
-Lorenzo Rosseta (Sorbonne Université), Roberto Netti (Sorbonne Université), Anna Paola Muntoni (Politecnico di Torino), Martin Weigt (Sorbonne Université), Francesco Zamponi (Sapienza Università di Roma)  
+Lorenzo Rosset (Sorbonne Université), Roberto Netti (Sorbonne Université), Anna Paola Muntoni (Politecnico di Torino), Martin Weigt (Sorbonne Université), Francesco Zamponi (Sapienza Università di Roma)  
 **Maintainer:** Roberto Netti
 
 ## Overview
@@ -44,6 +44,7 @@ This will install all necessary dependencies and set up the package.
    ```julia
    using Pkg
    Pkg.add("https://github.com/spqb/adabmDCA.jl")
+   Pkg.add("ArgParse")
    ```
 
 2. Download the files `adabmDCA.sh` and `execute.jl` into the same folder.
