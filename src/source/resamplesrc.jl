@@ -138,6 +138,17 @@
         return 
     end
 
+    function plot_hamming(hamm_dist, outputpath, label)
+
+        histogram(hamm_dist)
+        title!("Hamming Distance")
+        xlabel!("hamming distance from target sequence")
+        
+        hamm_path = (label != nothing) ? outputpath*"/"*label*"_correlation.png" : outputpath * "/hamming.png"
+        savefig(hamm_path)
+        return 
+    end
+
 
 # RESAMPLE MODEL ########################################################################################################################################################################
 
@@ -246,11 +257,11 @@
         (Nq, Nv) = size(vbias)
         data = read_fasta2(datapath, alphabet)
 
-        
+
         target_seq = oneHotEncoding(permutedims(read_fasta2(target_seq_path, alphabet), [2, 1]), length(alphabet))
         println(size(target_seq))
         vbias .+= theta .* target_seq 
-
+        target_seq = reshape(target_seq, (Nq*Nv))
 
         v_natural = oneHotEncoding(permutedims(data, [2, 1]), length(alphabet))
         (Nq, Nv, Ns) = size(v_natural)
@@ -269,6 +280,8 @@
         write(Cij_file, "0 $pearsonCij\n"); flush(Cij_file)
 
         switch_time, switch_flag = 0, true
+
+        hamm_dist = zeros(size(v_model, 3))
 
         if mixing_time == true
             v_compare, v_back = copy(v_model[:, :, shuffle(1:size(v_model, 3))]), copy(v_model)
@@ -297,6 +310,14 @@
                     write(Cij_file, "$epoch (sweeps: $(epoch*nsweeps)) $pearsonCij\n"); flush(Cij_file)
                     # (showplot == true) ? plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath) : nothing
                     plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath, label)
+
+                    v = reshape(v_model, (Nq*Nv, Ns))
+                    for i in 1:size(v_model, 3)
+                        hamm_dist[i] = oneHotHammingDistance(v[:, i], target_seq)
+                    end
+                    plot_hamming(hamm_dist, outputpath, label)
+                    
+
                     if abs(ave1 - ave2)  / sqrt(sigma1 + sigma2) < 0.01
                         t_mix = div(epoch, 2) 
                         println("Chains are at equilibrium! mixing time is: ", t_mix * nsweeps, " sweeps \n"); flush(stdout)
