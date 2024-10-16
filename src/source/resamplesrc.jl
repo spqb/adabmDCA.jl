@@ -258,7 +258,7 @@
         data = read_fasta2(datapath, alphabet)
 
 
-        target_seq = oneHotEncoding(permutedims(read_fasta2(target_seq_path, alphabet), [2, 1]), length(alphabet))
+        target_seq = reshape(oneHotEncoding(permutedims(read_fasta2(target_seq_path, alphabet), [2, 1]), length(alphabet)), Nq*Nv)
         println(size(target_seq))
         vbias .+= theta .* target_seq 
         target_seq = reshape(target_seq, (Nq*Nv))
@@ -311,7 +311,7 @@
                     # (showplot == true) ? plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath) : nothing
                     plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath, label)
 
-                    v = reshape(v_model, (Nq*Nv, Ns))
+                    v = reshape(v_model, (Nq*Nv, size(v_model, 3)))
                     for i in 1:size(v_model, 3)
                         hamm_dist[i] = oneHotHammingDistance(v[:, i], target_seq)
                     end
