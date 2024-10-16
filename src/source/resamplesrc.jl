@@ -350,12 +350,11 @@
             GC.gc()
         end
        
-        save_fasta(v, alphabet, label, path_save)
+        save_fasta(v, alphabet, label, outputpath)
         close(logfile)
         close(Cij_file)
         close(decorr_file)
     end
-
 
 
 
