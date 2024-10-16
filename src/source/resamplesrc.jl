@@ -144,7 +144,7 @@
         title!("Hamming Distance")
         xlabel!("hamming distance from target sequence")
         
-        hamm_path = (label != nothing) ? outputpath*"/"*label*"_correlation.png" : outputpath * "/hamming.png"
+        hamm_path = (label != nothing) ? outputpath*"/"*label*"hamming.png" : outputpath * "/hamming.png"
         savefig(hamm_path)
         return 
     end
