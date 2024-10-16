@@ -37,7 +37,7 @@ module adabmDCA
     export fit_edDCA
 
     # sample
-    export sample_DCA
+    export sample_DCA, importance_sample_DCA
 
     # contacts
     export compute_Frobenius_norm
