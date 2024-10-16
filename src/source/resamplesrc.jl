@@ -57,8 +57,8 @@
         Nq, Nv, Ns = size(v_model)
         v_cat = oneHot2Categorical(v_model, Nq)
         # save chains
-        file_chains = (label != nothing) ? outputpath*"/"*label*"_resampled_chains.fasta" : outputpath * "/resampled_chains.fasta"
-        # file_chains = open(outputpath * "/resampled_chains.fasta", "w")
+        path = (label != nothing) ? outputpath*"/"*label*"_resampled_chains.fasta" : outputpath * "/resampled_chains.fasta"
+        file_chains = open(path, "w")
         for m in 1:Ns-1
             head = ">chain $m\n"
             line = "$(alphabet[v_cat[:, m]])\n"
