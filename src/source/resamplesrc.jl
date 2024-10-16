@@ -258,8 +258,8 @@
         data = read_fasta2(datapath, alphabet)
 
 
-        target_seq = reshape(oneHotEncoding(permutedims(read_fasta2(target_seq_path, alphabet), [2, 1]), length(alphabet)), Nq*Nv)
-        println(size(target_seq))
+        target_seq = oneHotEncoding(permutedims(read_fasta2(target_seq_path, alphabet), [2, 1]), length(alphabet))
+        println(size(target_seq), " ", size(vbias))
         vbias .+= theta .* target_seq 
         target_seq = reshape(target_seq, (Nq*Nv))
 
