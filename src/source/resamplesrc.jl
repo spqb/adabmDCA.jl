@@ -53,11 +53,12 @@
 
 # SAVE AND RESTORE MODEL ########################################################################################################################################################################
 
-    function save_fasta(v_model, alphabet, outputpath)
+    function save_fasta(v_model, alphabet, label, outputpath)
         Nq, Nv, Ns = size(v_model)
         v_cat = oneHot2Categorical(v_model, Nq)
         # save chains
-        file_chains = open(outputpath * "/resampled_chains.fasta", "w")
+        file_chains = (label != nothing) ? outputpath*"/"*label*"_resampled_chains.fasta" : outputpath * "/resampled_chains.fasta"
+        # file_chains = open(outputpath * "/resampled_chains.fasta", "w")
         for m in 1:Ns-1
             head = ">chain $m\n"
             line = "$(alphabet[v_cat[:, m]])\n"
@@ -235,7 +236,7 @@
             write(Cij_file, "$i $pearsonCij\n"); flush(Cij_file)
             GC.gc()
         end
-        save_fasta(v, alphabet, outputpath)
+        save_fasta(v, alphabet, label, outputpath)
         close(logfile)
         close(Cij_file)
         close(decorr_file)
@@ -348,7 +349,8 @@
             plot_hamming(hamm_dist, outputpath, label)
             GC.gc()
         end
-        save_fasta(v, alphabet, outputpath)
+       
+        save_fasta(v, alphabet, label, path_save)
         close(logfile)
         close(Cij_file)
         close(decorr_file)
