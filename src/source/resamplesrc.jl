@@ -138,7 +138,7 @@
 
 # PLOT DECORRELATION ########################################################################################################################################################################
 
-    function plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath)
+    function plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath, label)
         # Define the formatter to use two decimal places
         decimal_formatter = x -> @sprintf("%.2f", x)
         t = length(decorrelation_compare)
@@ -146,7 +146,9 @@
         plot(decorrelation_compare, label="SeqID(t)", xlabel="t", ylabel="1 - average_distance", xscale=:log10, yscale=:log10, xformatter=decimal_formatter, yformatter=decimal_formatter, yticks=0:0.1:1, linewidth=:3, marker = :o)
         plot!(decorrelation_back, label="SeqID(t,t/2)", xscale=:log10, yformatter=decimal_formatter, yticks=0:0.1:1, linewidth=:3, marker = :o)
         title!("Mixing Time")
-        savefig(outputpath * "/correlation.png")
+        dec_path = (label != nothing) ? outputpath*"/"*label*"_correlation.png" : outputpath * "/correlation.png"
+        savefig(dec_path)
+        # savefig(outputpath * "/correlation.png")
         return 
     end
 
@@ -218,7 +220,7 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
             
             v_compare = copy(v_model[:, :, shuffle(1:size(v_model, 3))])
             if epoch % 2 == 0
-                println("sweep n: ", div(epoch, 2)); flush(stdout)
+                println("sweep n: ", div(epoch, 2)*nsweeps); flush(stdout)
                 Random.seed!(div(epoch, 2)); v_back, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_back, nsweeps, switch_time, switch_flag, method) # sampling 
                 push!(decorrelation_compare, sampleDecorrelation(v_model, v_compare)); push!(decorrelation_back, sampleDecorrelation(v_model, v_back))
                 println("1-average_distance - independent chains: ", round(decorrelation_compare[end], digits=4) , ", chains after t: ", round(decorrelation_back[end], digits=4)); flush(stdout)
@@ -304,11 +306,11 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
             
             t_mix = 0
             for epoch in 1:nepochs
-                Random.seed!(epoch); v_model, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_model, 1, switch_time, switch_flag, method) # sampling 
+                Random.seed!(epoch); v_model, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling 
                 v_compare = copy(v_model[:, :, shuffle(1:size(v_model, 3))])
                 if epoch % 2 == 0
-                    println("\nepoch n: ", div(epoch, 2)); flush(stdout)
-                    Random.seed!(div(epoch, 2)); v_back, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_back, 1, switch_time, switch_flag, method) # sampling 
+                    println("epoch n: ", div(epoch, 2), ", sweep n: ", div(epoch, 2)*nsweeps); flush(stdout)
+                    Random.seed!(div(epoch, 2)); v_back, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_back, nsweeps, switch_time, switch_flag, method) # sampling 
                     ave1, sigma1 = sampleDecorrelation_andSTD(v_model, v_compare)
                     ave2, sigma2 = sampleDecorrelation_andSTD(v_model, v_back)
                     push!(decorrelation_compare, ave1); push!(decorrelation_back, ave2)
@@ -316,13 +318,13 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
                     pearsonCij, pearsonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))
                     println("SeqID independent chains ", round(decorrelation_compare[end], digits=4) , "  chains after t ", round(decorrelation_back[end], digits=4)); flush(stdout)
                     println("pearson Cij ", pearsonCij, " pearson Fi ", pearsonFi); flush(stdout)
-                    write(decorr_file, "$epoch $(decorrelation_compare[end]) $(decorrelation_back[end])\n"); flush(decorr_file)
-                    write(Cij_file, "$epoch $pearsonCij\n"); flush(Cij_file)
+                    write(decorr_file, "$epoch (sweeps: $(epoch*nsweeps)) $(decorrelation_compare[end]) $(decorrelation_back[end])\n"); flush(decorr_file)
+                    write(Cij_file, "$epoch (sweeps: $(epoch*nsweeps)) $pearsonCij\n"); flush(Cij_file)
                     # (showplot == true) ? plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath) : nothing
-                    plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath)
+                    plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath, label)
                     if abs(ave1 - ave2)  / sqrt(sigma1 + sigma2) < 0.01
                         t_mix = div(epoch, 2) 
-                        println("Chains are at equilibrium! mixing time is: ", t_mix, "\n"); flush(stdout)
+                        println("Chains are at equilibrium! mixing time is: ", t_mix * nsweeps, " sweeps \n"); flush(stdout)
                         break
                     end
                 end
