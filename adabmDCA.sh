@@ -56,6 +56,9 @@ case "$COMMAND" in
   sample)
     exec="sample"
     ;;
+  importance_sample)
+    exec="importance_sample"
+    ;;
   energies)
     exec="energies"
     ;;

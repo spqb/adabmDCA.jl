@@ -125,6 +125,15 @@ function parse_commandline()
             default = false
             help = "(Defaults to False) show plot"
             action = :store_true
+
+        # importance sampling
+        "--theta"
+            arg_type = Float32
+            default = 1
+            help = "Bias towards target sequence"
+        "--targetseq"
+            arg_type = String
+            help = "Filename of the dataset to be used for training the model."
     end
 
     return parse_args(s)
@@ -154,4 +163,10 @@ elseif args["model"] == "DMS"
 
 elseif args["model"] == "contacts"
     compute_Frobenius_norm(args["path_params"], args["output"], args["label"]) 
+
+
+
+
+elseif args["model"] == "importance_sample"
+    importance_sample_DCA(args["data"], args["alphabet"], args["weights"], args["nchains"], args["pseudocount"], args["nepochs"], args["nsweeps"], args["output"],  args["path_params"], args["nmeasure"], args["nmix"], args["no_mixingtime"], args["label"], args["showplot"], args["seed"], args["sampler"], args["targetseq"], args["theta"])
 end

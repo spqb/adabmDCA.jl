@@ -703,6 +703,8 @@
         return count(seq1 .!= seq2) / 2
     end
 
+   
+
 
     # Frobenius Norm 
     function compute_Frobenius_norm(path_params, outputpath, label) 

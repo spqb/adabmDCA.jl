@@ -1,18 +1,3 @@
-# module resample
-
-# using Distributions
-# using Base.Threads
-# using StatsBase
-# using Distances
-# using Random
-# using Plots
-# using Printf
-
-
-
-# include("utils.jl")
-# using .utils 
-
 # COMPUTE SWITCHING TIME ########################################################################################################################################################################
 
     function compute_sampling_switch_time_re(J, vbias, v_model, nsweeps)
@@ -62,6 +47,8 @@
         end
         return v_model, switch_flag
     end
+
+
 
 
 # SAVE AND RESTORE MODEL ########################################################################################################################################################################
@@ -148,121 +135,11 @@
         title!("Mixing Time")
         dec_path = (label != nothing) ? outputpath*"/"*label*"_correlation.png" : outputpath * "/correlation.png"
         savefig(dec_path)
-        # savefig(outputpath * "/correlation.png")
         return 
     end
 
-    
-# function plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath)
-#     # Define the formatter to use two decimal places (if needed)
-#     # decimal_formatter = x -> @sprintf("%.2f", x)
-
-#     # Create the plot with specified formats
-#     plot(decorrelation_compare, label="independent", xlabel="t", ylabel="1 - average_distance", 
-#          xscale=:log10, yscale=:log10, 
-#          xticks=0:1:10, yticks=0:0.1:1)  # Customize ticks as needed
-
-#     plot!(decorrelation_back, label="t", xscale=:log10, yticks=0:0.1:1)  # Customize ticks here as well
-
-#     savefig(outputpath * "/correlation.png")
-#     return 
-# end
-
 
 # RESAMPLE MODEL ########################################################################################################################################################################
-
-function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepochs, nsweeps, outputpath, target, path_params, path_chains, mixing_time, label, method)
-        model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
-        path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
-        logfile = open(path_log, "w"); redirect_stdout(logfile)
-
-        path_dec = (label != nothing) ? model_dir*"/"*label*"_autocorrelation.txt" : model_dir * "/autocorrelation.txt"
-        decorr_file = open(path_dec, "w") 
-
-        path_Cij = (label != nothing) ? model_dir*"/"*label*"_pearsonCij.txt" : model_dir * "/pearsonCij.txt"
-        Cij_file = (datapath != nothing) ? open(path_Cij, "w") : nothing
-
-        inv_temp = 1
-        alphabet = set_alphabet(alphabet)
-        J, vbias, alphabet = restore_params_new(path_params)
-
-        (Nq, Nv) = size(vbias)
-
-        if datapath != nothing
-            data = read_fasta2(datapath, alphabet)
-            v_natural = oneHotEncoding(permutedims(data, [2, 1]), length(alphabet))
-            (Nq, Nv, Ns) = size(v_natural)
-            natural_weights, Meff, pseudo_count = assign_natural_weights(weights, v_natural, pseudo_count, outputpath, label)
-        end
-        filter, contact_list, site_degree = initialize_graph_couplingwise(J, Nq, Nv)
-        Random.seed!(0); v_model = (path_chains != nothing) ? restore_chains(path_chains, alphabet) : sample_from_profile(vbias, div(nchains, 2))
-        model_weights = ones(Float32, size(v_model, 3))
-        
-
-        v_compare, v_back = copy(v_model[:, :, shuffle(1:size(v_model, 3))]), copy(v_model)
-        decorrelation_compare, decorrelation_back = [sampleDecorrelation(v_model, v_compare)], [sampleDecorrelation(v_model, v_back)]
-        write(decorr_file, "0 $(decorrelation_compare[1]) $(decorrelation_back[1])\n"); flush(decorr_file)
-    
-        if datapath != nothing
-            fi_model, _ =  oneHotFreqs(v_model, model_weights, 0); fi_natural, _ = oneHotFreqs(v_natural, natural_weights, pseudo_count)
-            cij_model, cij_natural = oneHotCijFast(v_model, model_weights, 0), oneHotCijFast(v_natural, natural_weights, pseudo_count)
-            pearsonCij, pearsonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))    
-            println("t = 0 - Pearson Cij: ", pearsonCij, ", Pearson Fi: ", pearsonFi, "\n"); flush(stdout)
-            write(Cij_file, "0 $pearsonCij\n"); flush(Cij_file)
-        end
-    
-        # compute switch time
-        switch_time, switch_flag = 0, true
-        decorr_time = 0
-        for epoch in 1:nepochs
-            Random.seed!(epoch); v_model, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling 
-            
-            
-            v_compare = copy(v_model[:, :, shuffle(1:size(v_model, 3))])
-            if epoch % 2 == 0
-                println("sweep n: ", div(epoch, 2)*nsweeps); flush(stdout)
-                Random.seed!(div(epoch, 2)); v_back, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_back, nsweeps, switch_time, switch_flag, method) # sampling 
-                push!(decorrelation_compare, sampleDecorrelation(v_model, v_compare)); push!(decorrelation_back, sampleDecorrelation(v_model, v_back))
-                println("1-average_distance - independent chains: ", round(decorrelation_compare[end], digits=4) , ", chains after t: ", round(decorrelation_back[end], digits=4)); flush(stdout)
-                plot_decorrelation(decorrelation_compare, decorrelation_back, epoch, outputpath)
-                write(decorr_file, "$epoch $(decorrelation_compare[end]) $(decorrelation_back[end])\n"); flush(decorr_file)
-                if (decorrelation_compare[end] - decorrelation_back[end]) * (decorrelation_compare[end-1] - decorrelation_back[end-1]) < 0 
-                    decorr_time = div(epoch, 2) 
-                    println("Chains are at equilibrium!\n"); flush(stdout)
-                    break
-                end
-                if datapath != nothing
-                    cij_model = oneHotCijFast(v_model, model_weights, 0) 
-                    pearsonCij, pearsonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))
-                    println("pearson Cij: ", pearsonCij, ", pearson Fi: ", pearsonFi, "\n"); flush(stdout)
-                    write(Cij_file, "$epoch $pearsonCij\n"); flush(Cij_file)
-                end
-            end
-            
-        end
-
-        v = cat(v_model, v_back, dims=3)
-        for i in 1:decorr_time
-            v, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v, nsweeps, switch_time, switch_flag, method)
-            if datapath != nothing
-                cij_model = oneHotCijFast(v, ones(Float32, size(v, 3)), 0) 
-                pearsonCij, pearsonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))
-                println("pearson Cij: ", pearsonCij, ", pearson Fi: ", pearsonFi, "\n"); flush(stdout)
-                write(Cij_file, "$i $pearsonCij\n"); flush(Cij_file)
-            end
-        end
-        save_fasta(v, alphabet, outputpath)
-        close(logfile)
-        close(Cij_file)
-        close(decorr_file)
-    end
-
-
-
-
-
-
-
 
     function sample_DCA(datapath, alphabet, weights, nchains, pseudo_count, nepochs, nsweeps, outputpath, path_params, nmeasure, nmix, mixing_time, label, showplot, seed, method)
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
@@ -353,6 +230,103 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
         close(decorr_file)
     end
 
+# IMPORTANCE SAMPLING
+
+    function importance_sample_DCA(datapath, alphabet, weights, nchains, pseudo_count, nepochs, nsweeps, outputpath, path_params, nmeasure, nmix, mixing_time, label, showplot, seed, method, target_seq_path, theta)
+        model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
+        path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
+        logfile = open(path_log, "w"); redirect_stdout(logfile)
+        path_dec = (label != nothing) ? model_dir*"/"*label*"_autocorrelation.txt" : model_dir * "/autocorrelation.txt"
+        decorr_file = open(path_dec, "w") 
+        path_Cij = (label != nothing) ? model_dir*"/"*label*"_pearsonCij.txt" : model_dir * "/pearsonCij.txt"
+        Cij_file =  open(path_Cij, "w")  
+        inv_temp = 1
+        alphabet = set_alphabet(alphabet)
+        J, vbias, alphabet = restore_params_new(path_params)
+        (Nq, Nv) = size(vbias)
+        data = read_fasta2(datapath, alphabet)
+
+        
+        target_seq = oneHotEncoding(permutedims(read_fasta2(target_seq_path, alphabet), [2, 1]), length(alphabet))
+        println(size(target_seq))
+        vbias .+= theta .* target_seq 
+
+
+        v_natural = oneHotEncoding(permutedims(data, [2, 1]), length(alphabet))
+        (Nq, Nv, Ns) = size(v_natural)
+        natural_weights, Meff, pseudo_count = assign_natural_weights(weights, v_natural, pseudo_count, outputpath, label)
+        filter, contact_list, site_degree = initialize_graph_couplingwise(J, Nq, Nv)
+        natural_weights = natural_weights / sum(natural_weights)
+        Random.seed!(0);  
+        extracted = sample(1:length(natural_weights), Weights(natural_weights), nmeasure; replace=true)  # rand(Categorical(natural_weights), nmeasure); 
+        v_model = copy(v_natural[:, :, extracted]) # v_model = sample_from_profile(vbias, div(nchains, 2))
+        model_weights = ones(Float32, size(v_model, 3))
+        
+        fi_model, _ =  oneHotFreqs(v_model, model_weights, 0); fi_natural, _ = oneHotFreqs(v_natural, natural_weights, pseudo_count)
+        cij_model, cij_natural = oneHotCijFast(v_model, model_weights, 0), oneHotCijFast(v_natural, natural_weights, pseudo_count)
+        pearsonCij, pearsonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))    
+        println("t = 0 - Pearson Cij: ", pearsonCij, ", Pearson Fi: ", pearsonFi, "\n"); flush(stdout)
+        write(Cij_file, "0 $pearsonCij\n"); flush(Cij_file)
+
+        switch_time, switch_flag = 0, true
+
+        if mixing_time == true
+            v_compare, v_back = copy(v_model[:, :, shuffle(1:size(v_model, 3))]), copy(v_model)
+            ave1, sigma1 = sampleDecorrelation_andSTD(v_model, v_compare)
+            ave2, sigma2 = sampleDecorrelation_andSTD(v_model, v_back)
+            decorrelation_compare, decorrelation_back = [ave1], [ave2]
+            write(decorr_file, "0 $(decorrelation_compare[1]) $(decorrelation_back[1])\n"); flush(decorr_file)
+            
+            # compute switch time
+            
+            t_mix = 0
+            for epoch in 1:nepochs
+                Random.seed!(epoch); v_model, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling 
+                v_compare = copy(v_model[:, :, shuffle(1:size(v_model, 3))])
+                if epoch % 2 == 0
+                    println("epoch n: ", div(epoch, 2), ", sweep n: ", div(epoch, 2)*nsweeps); flush(stdout)
+                    Random.seed!(div(epoch, 2)); v_back, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_back, nsweeps, switch_time, switch_flag, method) # sampling 
+                    ave1, sigma1 = sampleDecorrelation_andSTD(v_model, v_compare)
+                    ave2, sigma2 = sampleDecorrelation_andSTD(v_model, v_back)
+                    push!(decorrelation_compare, ave1); push!(decorrelation_back, ave2)
+                    cij_model = oneHotCijFast(v_model, model_weights, 0) 
+                    pearsonCij, pearsonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))
+                    println("SeqID independent chains ", round(decorrelation_compare[end], digits=4) , "  chains after t ", round(decorrelation_back[end], digits=4)); flush(stdout)
+                    println("pearson Cij ", pearsonCij, " pearson Fi ", pearsonFi); flush(stdout)
+                    write(decorr_file, "$epoch (sweeps: $(epoch*nsweeps)) $(decorrelation_compare[end]) $(decorrelation_back[end])\n"); flush(decorr_file)
+                    write(Cij_file, "$epoch (sweeps: $(epoch*nsweeps)) $pearsonCij\n"); flush(Cij_file)
+                    # (showplot == true) ? plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath) : nothing
+                    plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath, label)
+                    if abs(ave1 - ave2)  / sqrt(sigma1 + sigma2) < 0.01
+                        t_mix = div(epoch, 2) 
+                        println("Chains are at equilibrium! mixing time is: ", t_mix * nsweeps, " sweeps \n"); flush(stdout)
+                        break
+                    end
+                end
+                GC.gc()
+            end
+        end
+
+        Random.seed!(seed)
+        println("\nInitializing in profile model and sampling...", "\n"); flush(stdout)
+        ntot = (mixing_time == true) ? nmix*t_mix : nepochs
+        v = sample_from_profile(vbias, nchains, 2)
+        model_weights = ones(Float32, size(v, 3))
+
+        for i in 1:ntot
+            println("\nepoch n: ", i); flush(stdout)
+            v, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v, nsweeps, switch_time, switch_flag, method)
+            cij_model = oneHotCijFast(v, ones(Float32, size(v, 3)), 0) 
+            pearsonCij, pearsonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))
+            println("pearson Cij: ", pearsonCij, ", pearson Fi: ", pearsonFi); flush(stdout)
+            write(Cij_file, "$i $pearsonCij\n"); flush(Cij_file)
+            GC.gc()
+        end
+        save_fasta(v, alphabet, outputpath)
+        close(logfile)
+        close(Cij_file)
+        close(decorr_file)
+    end
 
 
 
@@ -363,6 +337,130 @@ function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepo
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function resampling_old(datapath, alphabet, weights, nchains, pseudo_count, nepochs, nsweeps, outputpath, target, path_params, path_chains, mixing_time, label, method)
+        model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
+        path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
+        logfile = open(path_log, "w"); redirect_stdout(logfile)
+
+        path_dec = (label != nothing) ? model_dir*"/"*label*"_autocorrelation.txt" : model_dir * "/autocorrelation.txt"
+        decorr_file = open(path_dec, "w") 
+
+        path_Cij = (label != nothing) ? model_dir*"/"*label*"_pearsonCij.txt" : model_dir * "/pearsonCij.txt"
+        Cij_file = (datapath != nothing) ? open(path_Cij, "w") : nothing
+
+        inv_temp = 1
+        alphabet = set_alphabet(alphabet)
+        J, vbias, alphabet = restore_params_new(path_params)
+
+        (Nq, Nv) = size(vbias)
+
+        if datapath != nothing
+            data = read_fasta2(datapath, alphabet)
+            v_natural = oneHotEncoding(permutedims(data, [2, 1]), length(alphabet))
+            (Nq, Nv, Ns) = size(v_natural)
+            natural_weights, Meff, pseudo_count = assign_natural_weights(weights, v_natural, pseudo_count, outputpath, label)
+        end
+        filter, contact_list, site_degree = initialize_graph_couplingwise(J, Nq, Nv)
+        Random.seed!(0); v_model = (path_chains != nothing) ? restore_chains(path_chains, alphabet) : sample_from_profile(vbias, div(nchains, 2))
+        model_weights = ones(Float32, size(v_model, 3))
+        
+
+        v_compare, v_back = copy(v_model[:, :, shuffle(1:size(v_model, 3))]), copy(v_model)
+        decorrelation_compare, decorrelation_back = [sampleDecorrelation(v_model, v_compare)], [sampleDecorrelation(v_model, v_back)]
+        write(decorr_file, "0 $(decorrelation_compare[1]) $(decorrelation_back[1])\n"); flush(decorr_file)
+    
+        if datapath != nothing
+            fi_model, _ =  oneHotFreqs(v_model, model_weights, 0); fi_natural, _ = oneHotFreqs(v_natural, natural_weights, pseudo_count)
+            cij_model, cij_natural = oneHotCijFast(v_model, model_weights, 0), oneHotCijFast(v_natural, natural_weights, pseudo_count)
+            pearsonCij, pearsonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))    
+            println("t = 0 - Pearson Cij: ", pearsonCij, ", Pearson Fi: ", pearsonFi, "\n"); flush(stdout)
+            write(Cij_file, "0 $pearsonCij\n"); flush(Cij_file)
+        end
+    
+        # compute switch time
+        switch_time, switch_flag = 0, true
+        decorr_time = 0
+        for epoch in 1:nepochs
+            Random.seed!(epoch); v_model, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_model, nsweeps, switch_time, switch_flag, method) # sampling 
+            
+            
+            v_compare = copy(v_model[:, :, shuffle(1:size(v_model, 3))])
+            if epoch % 2 == 0
+                println("sweep n: ", div(epoch, 2)*nsweeps); flush(stdout)
+                Random.seed!(div(epoch, 2)); v_back, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v_back, nsweeps, switch_time, switch_flag, method) # sampling 
+                push!(decorrelation_compare, sampleDecorrelation(v_model, v_compare)); push!(decorrelation_back, sampleDecorrelation(v_model, v_back))
+                println("1-average_distance - independent chains: ", round(decorrelation_compare[end], digits=4) , ", chains after t: ", round(decorrelation_back[end], digits=4)); flush(stdout)
+                plot_decorrelation(decorrelation_compare, decorrelation_back, epoch, outputpath)
+                write(decorr_file, "$epoch $(decorrelation_compare[end]) $(decorrelation_back[end])\n"); flush(decorr_file)
+                if (decorrelation_compare[end] - decorrelation_back[end]) * (decorrelation_compare[end-1] - decorrelation_back[end-1]) < 0 
+                    decorr_time = div(epoch, 2) 
+                    println("Chains are at equilibrium!\n"); flush(stdout)
+                    break
+                end
+                if datapath != nothing
+                    cij_model = oneHotCijFast(v_model, model_weights, 0) 
+                    pearsonCij, pearsonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))
+                    println("pearson Cij: ", pearsonCij, ", pearson Fi: ", pearsonFi, "\n"); flush(stdout)
+                    write(Cij_file, "$epoch $pearsonCij\n"); flush(Cij_file)
+                end
+            end
+            
+        end
+
+        v = cat(v_model, v_back, dims=3)
+        for i in 1:decorr_time
+            v, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v, nsweeps, switch_time, switch_flag, method)
+            if datapath != nothing
+                cij_model = oneHotCijFast(v, ones(Float32, size(v, 3)), 0) 
+                pearsonCij, pearsonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))
+                println("pearson Cij: ", pearsonCij, ", pearson Fi: ", pearsonFi, "\n"); flush(stdout)
+                write(Cij_file, "$i $pearsonCij\n"); flush(Cij_file)
+            end
+        end
+        save_fasta(v, alphabet, outputpath)
+        close(logfile)
+        close(Cij_file)
+        close(decorr_file)
+    end
 
     function resampling(datapath, alphabet, weights, nchains, pseudo_count, nepochs, nsweeps, outputpath, target, path_params, path_chains, mixing_time, label, method)
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
