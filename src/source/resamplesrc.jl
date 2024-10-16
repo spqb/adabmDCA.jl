@@ -331,7 +331,7 @@
         Random.seed!(seed)
         println("\nInitializing in profile model and sampling...", "\n"); flush(stdout)
         ntot = (mixing_time == true) ? nmix*t_mix : nepochs
-        v = sample_from_profile(vbias, nchains, 2)
+        v = BitArray(sample_from_profile(vbias, nchains, 2))
         model_weights = ones(Float32, size(v, 3))
 
         for i in 1:ntot
