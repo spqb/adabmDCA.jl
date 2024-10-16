@@ -331,7 +331,7 @@
         Random.seed!(seed)
         println("\nInitializing in profile model and sampling...", "\n"); flush(stdout)
         ntot = (mixing_time == true) ? nmix*t_mix : nepochs
-        v = BitArray(sample_from_profile(vbias, nchains, 2))
+        v = sample_from_profile(vbias, nchains, 2)
         model_weights = ones(Float32, size(v, 3))
 
         for i in 1:ntot
@@ -341,9 +341,9 @@
             pearsonCij, pearsonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))
             println("pearson Cij: ", pearsonCij, ", pearson Fi: ", pearsonFi); flush(stdout)
             write(Cij_file, "$i $pearsonCij\n"); flush(Cij_file)
-            v = reshape(v_model, (Nq*Nv, size(v_model, 3)))
+            v_hamm = reshape(v_model, (Nq*Nv, size(v_model, 3)))
             for i in 1:size(v_model, 3)
-                hamm_dist[i] = oneHotHammingDistance(v[:, i], target_seq)
+                hamm_dist[i] = oneHotHammingDistance(v_hamm[:, i], target_seq)
             end
             plot_hamming(hamm_dist, outputpath, label)
             GC.gc()
