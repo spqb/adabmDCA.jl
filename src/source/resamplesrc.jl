@@ -140,8 +140,8 @@
 
     function plot_hamming(hamm_dist, outputpath, label)
 
-        histogram(hamm_dist)
-        title!("Hamming Distance")
+        histogram(hamm_dist, label="")
+        title!("Generate Sequences")
         xlabel!("hamming distance from target sequence")
         
         hamm_path = (label != nothing) ? outputpath*"/"*label*"hamming.png" : outputpath * "/hamming.png"
@@ -341,6 +341,11 @@
             pearsonCij, pearsonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))
             println("pearson Cij: ", pearsonCij, ", pearson Fi: ", pearsonFi); flush(stdout)
             write(Cij_file, "$i $pearsonCij\n"); flush(Cij_file)
+            v = reshape(v_model, (Nq*Nv, size(v_model, 3)))
+            for i in 1:size(v_model, 3)
+                hamm_dist[i] = oneHotHammingDistance(v[:, i], target_seq)
+            end
+            plot_hamming(hamm_dist, outputpath, label)
             GC.gc()
         end
         save_fasta(v, alphabet, outputpath)
