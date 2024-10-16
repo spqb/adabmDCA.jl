@@ -26,14 +26,17 @@ This repository contains the Julia version of adabmDCA, maintained by **Roberto 
 
 After installing [Julia](https://julialang.org/downloads/) on your system, you can install the package in one of the following ways:
 
-### Option 1: Using the `install.sh` script
-
-1. Download the `install.sh` script to your desired folder.
-2. Open a terminal in that folder and run the following commands:
+### Option 1: Using bash command
+Open a terminal in the desired folder, and run the following commands:
 
    ```bash
-   chmod +x install.sh
-   ./install.sh
+   # Download scripts from Github
+   wget -O adabmDCA.sh https://raw.githubusercontent.com/spqb/adabmDCA.jl/refs/heads/main/adabmDCA.sh
+   wget -O execute.jl https://raw.githubusercontent.com/spqb/adabmDCA.jl/refs/heads/main/execute.jl
+   chmod +x adabmDCA.sh
+
+   # Install ArgParse and adabmDCA.jl from the GitHub repo
+   julia --eval 'using Pkg; Pkg.add("ArgParse"); Pkg.add(PackageSpec(url="https://github.com/spqb/adabmDCA.jl"))'
    ```
 
 This will install all necessary dependencies and set up the package.
@@ -44,7 +47,7 @@ This will install all necessary dependencies and set up the package.
 
    ```julia
    using Pkg
-   Pkg.add("https://github.com/spqb/adabmDCA.jl")
+   Pkg.add(url="https://github.com/spqb/adabmDCA.jl")
    Pkg.add("ArgParse")
    ```
 
