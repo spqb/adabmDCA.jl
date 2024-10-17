@@ -235,6 +235,9 @@
             pearsonCij, pearsonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))
             println("pearson Cij: ", pearsonCij, ", pearson Fi: ", pearsonFi); flush(stdout)
             write(Cij_file, "$i $pearsonCij\n"); flush(Cij_file)
+            if i % 10 == 0
+                save_fasta(v, alphabet, label, outputpath)
+            end
             GC.gc()
         end
         save_fasta(v, alphabet, label, outputpath)
