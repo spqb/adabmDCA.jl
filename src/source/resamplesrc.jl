@@ -224,7 +224,7 @@
         Random.seed!(seed)
         println("\nInitializing in profile model and sampling...", "\n"); flush(stdout)
         ntot = (mixing_time == true) ? nmix*t_mix : nepochs
-        v = sample_from_profile(vbias, nchains, 2)
+        v = sample_from_profile(vbias, nchains, inv_temp)
         model_weights = ones(Float32, size(v, 3))
 
         for i in 1:ntot
@@ -270,8 +270,8 @@
         filter, contact_list, site_degree = initialize_graph_couplingwise(J, Nq, Nv)
         natural_weights = natural_weights / sum(natural_weights)
         Random.seed!(0);  
-        extracted = sample(1:length(natural_weights), Weights(natural_weights), nmeasure; replace=true)  # rand(Categorical(natural_weights), nmeasure); 
-        v_model = copy(v_natural[:, :, extracted]) # v_model = sample_from_profile(vbias, div(nchains, 2))
+        #extracted = sample(1:length(natural_weights), Weights(natural_weights), nmeasure; replace=true)  # rand(Categorical(natural_weights), nmeasure); 
+        v_model = sample_from_profile(vbias, nmeasure, inv_temp) #copy(v_natural[:, :, extracted]) 
         model_weights = ones(Float32, size(v_model, 3))
         
         fi_model, _ =  oneHotFreqs(v_model, model_weights, 0); fi_natural, _ = oneHotFreqs(v_natural, natural_weights, pseudo_count)
@@ -332,7 +332,7 @@
         Random.seed!(seed)
         println("\nInitializing in profile model and sampling...", "\n"); flush(stdout)
         ntot = (mixing_time == true) ? nmix*t_mix : nepochs
-        v = sample_from_profile(vbias, nchains, 2)
+        v = sample_from_profile(vbias, nchains, 1)
         model_weights = ones(Float32, size(v, 3))
 
         for i in 1:ntot
