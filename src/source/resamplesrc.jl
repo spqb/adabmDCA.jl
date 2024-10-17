@@ -321,15 +321,19 @@
                     
 
                     if abs(ave1 - ave2)  / sqrt(sigma1 + sigma2) < 0.05
-                        if length(decorrelation_compare) < 51
-                            m1, s1 = mean_and_var(decorrelation_compare[1:end])
-                            m2, s2 = mean_and_var(decorrelation_back[1:end])
-                        else
-                            m1, s1 = mean_and_var(decorrelation_compare[end-50:end])
-                            m2, s2 = mean_and_var(decorrelation_back[end-50:end])
-                        end
-                        println("s1: ", s1, ", m1: ", m1, ", s2: ", s2, ", m2: ", m2 )
-                        if abs(m1 - m2) < 0.005 #(s1 <= m1/100) && (s2 <= m2/100)
+                        # if length(decorrelation_compare) < 51
+                        #     m1, s1 = mean_and_var(decorrelation_compare[1:end])
+                        #     m2, s2 = mean_and_var(decorrelation_back[1:end])
+                        # else
+                        #     m1, s1 = mean_and_var(decorrelation_compare[end-50:end])
+                        #     m2, s2 = mean_and_var(decorrelation_back[end-50:end])
+                        # end
+                        # println("s1: ", s1, ", m1: ", m1, ", s2: ", s2, ", m2: ", m2 )
+                       
+                        m1, m11 = mean(decorrelation_compare), mean(decorrelation_compare[1:end-1])
+                        m2, m21 = mean(decorrelation_back), mean(decorrelation_back[1:end-1])
+                        println("delta1: ", abs(m1-m11), ", delta2: ", abs(m2-m21) )
+                        if abs(m1-m11) < 0.0001 &&  abs(m2-m21) < 0.0001 #(s1 <= m1/1000) && (s2 <= m2/1000) #abs(m1 - m2) < 0.005 #(
                             t_mix = div(epoch, 2) 
                             println("Chains are at equilibrium! mixing time is: ", t_mix * nsweeps, " sweeps \n"); flush(stdout)
                             break
