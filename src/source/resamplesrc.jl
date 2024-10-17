@@ -320,7 +320,7 @@
                     plot_hamming(hamm_dist, outputpath, label)
                     
 
-                    if abs(ave1 - ave2)  / sqrt(sigma1 + sigma2) < 0.025
+                    if abs(ave1 - ave2)  / sqrt(sigma1 + sigma2) < 0.05
                         if length(decorrelation_compare) < 51
                             m1, s1 = mean_and_var(decorrelation_compare[1:end])
                             m2, s2 = mean_and_var(decorrelation_back[1:end])
