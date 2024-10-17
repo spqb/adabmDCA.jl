@@ -126,13 +126,13 @@
 
 # PLOT DECORRELATION ########################################################################################################################################################################
 
-    function plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath, label)
+    function plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath, label, epoch, nsweeps)
         # Define the formatter to use two decimal places
         decimal_formatter = x -> @sprintf("%.2f", x)
         t = length(decorrelation_compare)
         # Create the plot with the specified formatters
-        plot(decorrelation_compare, label="SeqID(t)", xlabel="t", ylabel="1 - average_distance", xscale=:log10, yscale=:log10, xformatter=decimal_formatter, yformatter=decimal_formatter, yticks=0:0.1:1, linewidth=:3, marker = :o)
-        plot!(decorrelation_back, label="SeqID(t,t/2)", xscale=:log10, yformatter=decimal_formatter, yticks=0:0.1:1, linewidth=:3, marker = :o)
+        plot(collect(0:nsweeps:epoch*nsweeps), decorrelation_compare, label="SeqID(t)", xlabel="t", ylabel="1 - average_distance", xscale=:log10, yscale=:log10, xformatter=decimal_formatter, yformatter=decimal_formatter, yticks=0:0.1:1, linewidth=:3, marker = :o)
+        plot!(collect(0:nsweeps:epoch*nsweeps), decorrelation_back, label="SeqID(t,t/2)", xscale=:log10, yformatter=decimal_formatter, yticks=0:0.1:1, linewidth=:3, marker = :o)
         title!("Mixing Time")
         dec_path = (label != nothing) ? outputpath*"/"*label*"_correlation.png" : outputpath * "/correlation.png"
         savefig(dec_path)
@@ -210,7 +210,7 @@
                     write(decorr_file, "$epoch (sweeps: $(epoch*nsweeps)) $(decorrelation_compare[end]) $(decorrelation_back[end])\n"); flush(decorr_file)
                     write(Cij_file, "$epoch (sweeps: $(epoch*nsweeps)) $pearsonCij\n"); flush(Cij_file)
                     # (showplot == true) ? plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath) : nothing
-                    plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath, label)
+                    plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath, label, div(epoch, 2), nsweeps)
                     if abs(ave1 - ave2)  / sqrt(sigma1 + sigma2) < 0.01
                         t_mix = div(epoch, 2) 
                         println("Chains are at equilibrium! mixing time is: ", t_mix * nsweeps, " sweeps \n"); flush(stdout)
@@ -310,7 +310,7 @@
                     write(decorr_file, "$epoch (sweeps: $(epoch*nsweeps)) $(decorrelation_compare[end]) $(decorrelation_back[end])\n"); flush(decorr_file)
                     write(Cij_file, "$epoch (sweeps: $(epoch*nsweeps)) $pearsonCij\n"); flush(Cij_file)
                     # (showplot == true) ? plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath) : nothing
-                    plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath, label)
+                    plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath, label, div(epoch, 2), nsweeps)
 
                     v = reshape(v_model, (Nq*Nv, size(v_model, 3)))
                     for i in 1:size(v_model, 3)
@@ -320,14 +320,14 @@
                     
 
                     if abs(ave1 - ave2)  / sqrt(sigma1 + sigma2) < 0.01
-                        if length(decorrelation_compare) < 10
+                        if length(decorrelation_compare) < 11
                             m1, s1 = mean_and_var(decorrelation_compare[1:end])
                             m2, s2 = mean_and_var(decorrelation_back[1:end])
                         else
-                            m1, s1 = mean_and_var(decorrelation_compare[-10:end])
-                            m2, s2 = mean_and_var(decorrelation_back[-01:end])
+                            m1, s1 = mean_and_var(decorrelation_compare[end-10:end])
+                            m2, s2 = mean_and_var(decorrelation_back[end-10:end])
                         end
-                        if (s1 <= m1/20) && (s2 <= m2/20)
+                        if (s1 <= m1/50) && (s2 <= m2/50)
                             t_mix = div(epoch, 2) 
                             println("Chains are at equilibrium! mixing time is: ", t_mix * nsweeps, " sweeps \n"); flush(stdout)
                             break
