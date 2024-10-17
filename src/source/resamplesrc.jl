@@ -333,7 +333,7 @@
                         m1, m11 = mean(decorrelation_compare), mean(decorrelation_compare[1:end-1])
                         m2, m21 = mean(decorrelation_back), mean(decorrelation_back[1:end-1])
                         println("delta1: ", abs(m1-m11), ", delta2: ", abs(m2-m21) )
-                        if abs(m1-m11) < 0.0001 &&  abs(m2-m21) < 0.0001 #(s1 <= m1/1000) && (s2 <= m2/1000) #abs(m1 - m2) < 0.005 #(
+                        if abs(m1-m11) < 0.0003 &&  abs(m2-m21) < 0.0003 #(s1 <= m1/1000) && (s2 <= m2/1000) #abs(m1 - m2) < 0.005 #(
                             t_mix = div(epoch, 2) 
                             println("Chains are at equilibrium! mixing time is: ", t_mix * nsweeps, " sweeps \n"); flush(stdout)
                             break
