@@ -364,6 +364,9 @@
             end
             plot_hamming(hamm_dist, outputpath, label)
             GC.gc()
+            if i % 10 == 0
+                save_fasta(v, alphabet, label, outputpath)
+            end
         end
        
         save_fasta(v, alphabet, label, outputpath)
