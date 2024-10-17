@@ -320,7 +320,7 @@
                     plot_hamming(hamm_dist, outputpath, label)
                     
 
-                    if abs(ave1 - ave2)  / sqrt(sigma1 + sigma2) < 0.01
+                    if abs(ave1 - ave2)  / sqrt(sigma1 + sigma2) < 0.025
                         if length(decorrelation_compare) < 51
                             m1, s1 = mean_and_var(decorrelation_compare[1:end])
                             m2, s2 = mean_and_var(decorrelation_back[1:end])
@@ -329,7 +329,7 @@
                             m2, s2 = mean_and_var(decorrelation_back[end-50:end])
                         end
                         println("s1: ", s1, ", m1: ", m1, ", s2: ", s2, ", m2: ", m2 )
-                        if (s1 <= m1/100) && (s2 <= m2/50)
+                        if (s1 <= m1/50) && (s2 <= m2/50)
                             t_mix = div(epoch, 2) 
                             println("Chains are at equilibrium! mixing time is: ", t_mix * nsweeps, " sweeps \n"); flush(stdout)
                             break
