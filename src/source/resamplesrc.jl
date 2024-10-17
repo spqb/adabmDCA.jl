@@ -329,7 +329,7 @@
                             m2, s2 = mean_and_var(decorrelation_back[end-50:end])
                         end
                         println("s1: ", s1, ", m1: ", m1, ", s2: ", s2, ", m2: ", m2 )
-                        if (s1 <= m1/100) && (s2 <= m2/100)
+                        if (s1 <= m1/100) && (s2 <= m2/50)
                             t_mix = div(epoch, 2) 
                             println("Chains are at equilibrium! mixing time is: ", t_mix * nsweeps, " sweeps \n"); flush(stdout)
                             break
@@ -346,6 +346,7 @@
         v = sample_from_profile(vbias, nchains, 1)
         model_weights = ones(Float32, size(v, 3))
 
+        hamm_dist = zeros(size(v, 3))
         for i in 1:ntot
             println("\nepoch n: ", i); flush(stdout)
             v, switch_flag = sampling_sa(J, vbias, contact_list, site_degree, v, nsweeps, switch_time, switch_flag, method)
