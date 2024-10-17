@@ -131,9 +131,10 @@
         decimal_formatter = x -> @sprintf("%.2f", x)
         t = length(decorrelation_compare)
         # Create the plot with the specified formatters
-        plot(collect(0:nsweeps:epoch*nsweeps), decorrelation_compare, label="SeqID(t)", xlabel="t", ylabel="1 - average_distance", xscale=:log10, yscale=:log10, xformatter=decimal_formatter, yformatter=decimal_formatter, yticks=0:0.1:1, linewidth=:3, marker = :o)
-        plot!(collect(0:nsweeps:epoch*nsweeps), decorrelation_back, label="SeqID(t,t/2)", xscale=:log10, yformatter=decimal_formatter, yticks=0:0.1:1, linewidth=:3, marker = :o)
+        plot(decorrelation_compare, label="SeqID(t)", xlabel="t", ylabel="1 - average_distance", xscale=:log10, yscale=:log10, xformatter=decimal_formatter, yformatter=decimal_formatter, yticks=0:0.1:1, linewidth=:3, marker = :o)
+        plot!(decorrelation_back, label="SeqID(t,t/2)", xscale=:log10, yformatter=decimal_formatter, yticks=0:0.1:1, linewidth=:3, marker = :o)
         title!("Mixing Time")
+        xlabel!("epoch x " *string(nsweeps)* " sweeps")
         dec_path = (label != nothing) ? outputpath*"/"*label*"_correlation.png" : outputpath * "/correlation.png"
         savefig(dec_path)
         return 
