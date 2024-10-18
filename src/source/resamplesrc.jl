@@ -316,31 +316,31 @@
                     # (showplot == true) ? plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath) : nothing
                     plot_decorrelation(decorrelation_compare, decorrelation_back, outputpath, label, div(epoch, 2), nsweeps)
 
-                    v = reshape(v_model, (Nq*Nv, size(v_model, 3)))
+                    v = reshape(v_back, (Nq*Nv, size(v_back, 3)))
                     for i in 1:size(v_model, 3)
                         hamm_dist[i] = oneHotHammingDistance(v[:, i], target_seq)
                     end
                     plot_hamming(hamm_dist, outputpath, label)
                     
 
-                    if abs(ave1 - ave2)  / sqrt(sigma1 + sigma2) < 0.01
-                        # if length(decorrelation_compare) < 51
-                        #     m1, s1 = mean_and_var(decorrelation_compare[1:end])
-                        #     m2, s2 = mean_and_var(decorrelation_back[1:end])
-                        # else
-                        #     m1, s1 = mean_and_var(decorrelation_compare[end-50:end])
-                        #     m2, s2 = mean_and_var(decorrelation_back[end-50:end])
-                        # end
-                        # println("s1: ", s1, ", m1: ", m1, ", s2: ", s2, ", m2: ", m2 )
+                    # if abs(ave1 - ave2)  / sqrt(sigma1 + sigma2) < 0.01
+                    #     # if length(decorrelation_compare) < 51
+                    #     #     m1, s1 = mean_and_var(decorrelation_compare[1:end])
+                    #     #     m2, s2 = mean_and_var(decorrelation_back[1:end])
+                    #     # else
+                    #     #     m1, s1 = mean_and_var(decorrelation_compare[end-50:end])
+                    #     #     m2, s2 = mean_and_var(decorrelation_back[end-50:end])
+                    #     # end
+                    #     # println("s1: ", s1, ", m1: ", m1, ", s2: ", s2, ", m2: ", m2 )
                        
-                        m1, m11 = mean(decorrelation_compare), mean(decorrelation_compare[1:end-1])
-                        m2, m21 = mean(decorrelation_back), mean(decorrelation_back[1:end-1])
-                        println("delta1: ", abs(m1-m11), ", delta2: ", abs(m2-m21) )
-                        if abs(m1-m11) < 0.00001 &&  abs(m2-m21) < 0.00001 #(s1 <= m1/1000) && (s2 <= m2/1000) #abs(m1 - m2) < 0.005 #(
-                            t_mix = div(epoch, 2) 
-                            println("Chains are at equilibrium! mixing time is: ", t_mix * nsweeps, " sweeps \n"); flush(stdout)
-                            break
-                        end
+                    #     m1, m11 = mean(decorrelation_compare), mean(decorrelation_compare[1:end-1])
+                    #     m2, m21 = mean(decorrelation_back), mean(decorrelation_back[1:end-1])
+                    #     println("delta1: ", abs(m1-m11), ", delta2: ", abs(m2-m21) )
+                    #     if abs(m1-m11) < 0.00001 &&  abs(m2-m21) < 0.00001 #(s1 <= m1/1000) && (s2 <= m2/1000) #abs(m1 - m2) < 0.005 #(
+                    #         t_mix = div(epoch, 2) 
+                    #         println("Chains are at equilibrium! mixing time is: ", t_mix * nsweeps, " sweeps \n"); flush(stdout)
+                    #         break
+                    #     end
                     end
                 end
                 GC.gc()
