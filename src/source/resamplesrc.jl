@@ -341,7 +341,7 @@
                     #         println("Chains are at equilibrium! mixing time is: ", t_mix * nsweeps, " sweeps \n"); flush(stdout)
                     #         break
                     #     end
-                    end
+                    # end
                 end
                 GC.gc()
             end
