@@ -287,7 +287,7 @@
         """
         Nq, Nv, Ns = size(sample)
         sample_flat = reshape(sample, (Nq*Nv, Ns))
-        seqID_matrix = zeros(Float32, Ns, Ns)
+        seqID_matrix = zeros(Float16, Ns, Ns)
         weights = ones(Float32, Ns)
         # compute sequence identity matrix
         thread_count = nthreads(); chunk_size = div(Ns, thread_count)
@@ -299,7 +299,7 @@
         @threads :static for t in 1:thread_count
             start_idx, end_idx, _ = index_interval(t, thread_count, chunk_size, Ns)
             for i in start_idx:end_idx
-                weights[i] = sum(1 != seqID_matrix[i, :] .>= threshold)
+                weights[i] = Float32.(sum(1 != seqID_matrix[i, :] .>= threshold))
             end
         end
         weights = weights.^(-1)
