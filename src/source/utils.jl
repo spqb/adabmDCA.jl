@@ -291,11 +291,14 @@
         weights = ones(Float32, Ns)
         # compute sequence identity matrix
         thread_count = nthreads(); chunk_size = div(Ns, thread_count)
+        println("threads used for computing weight: ", thread_count); flush(stdout)
+        println("computing SeqID matrix..."); flush(stdout)
         @threads :static for t in 1:thread_count
             start_idx, end_idx, _ = index_interval(t, thread_count, chunk_size, Ns)
             seqID_matrix[start_idx:end_idx, :] .= (sample_flat[:, start_idx:end_idx]' * sample_flat) ./ Nv
         end
         # compute weights
+        println("computing weights from SeqID matrix..."); flush(stdout)
         @threads :static for t in 1:thread_count
             start_idx, end_idx, _ = index_interval(t, thread_count, chunk_size, Ns)
             for i in start_idx:end_idx
