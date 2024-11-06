@@ -216,7 +216,9 @@
                 println("pearson Cij: ", pearsonCij, ", pearson Fi: ", perasonFi); flush(stdout)
                 (epoch % 50 == 0) ? save_model_chains_bm(J, vbias, filter, v_model, alphabet, outputpath, label) : nothing
                 (pearsonCij >= target) ? break : nothing
+                GC.gc()
             end
+            
         end
         save_model_chains_bm(J, vbias, filter, v_model, alphabet, outputpath, label)
         println("training time: ", training_time); flush(stdout)
