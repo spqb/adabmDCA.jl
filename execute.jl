@@ -134,6 +134,12 @@ function parse_commandline()
         "--targetseq"
             arg_type = String
             help = "Filename of the dataset to be used for training the model."
+
+        # TD integration 
+        "--intstep"
+            arg_type = Int64
+            default = 100
+            help = "integration step"
     end
 
     return parse_args(s)
@@ -169,4 +175,6 @@ elseif args["model"] == "contacts"
 
 elseif args["model"] == "importance_sample"
     importance_sample_DCA(args["data"], args["alphabet"], args["weights"], args["nchains"], args["pseudocount"], args["nepochs"], args["nsweeps"], args["output"],  args["path_params"], args["nmeasure"], args["nmix"], args["no_mixingtime"], args["label"], args["showplot"], args["seed"], args["sampler"], args["targetseq"], args["theta"])
+elseif args["model"] == "TD_integration"
+    TD_integration(args["data"], args["alphabet"], args["weights"], args["nchains"], args["nsweeps"], args["output"],  args["path_params"], args["label"], args["sampler"], args["targetseq"], args["intstep"], args["theta"])
 end
