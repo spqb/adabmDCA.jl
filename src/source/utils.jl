@@ -281,7 +281,7 @@
         return modified_fasta
     end
 
-    function compute_weights(sample::BitArray{3}, outputpath, label, threshold=0.8)
+    function compute_weights_old(sample::BitArray{3}, outputpath, label, threshold=0.8)
         """
         threshold : sequence identity threshold
         """
@@ -310,6 +310,42 @@
         weights = weights.^(-1)
         Meff = sum(weights)
 
+        weights_file = (label != nothing) ? outputpath*"/"*label*"_"*"weights.dat" : outputpath*"/weights.dat"
+        file = open(weights_file, "w")
+        for w in weights
+            write(file, "$(w)\n")
+        end
+        close(file)
+        return weights, Meff
+    end
+
+    function compute_weights(sample::BitArray{3}, outputpath, label, threshold=0.8)
+        """
+        threshold : sequence identity threshold
+        """
+        Nq, Nv, Ns = size(sample)
+        sample_flat = reshape(sample, (Nq*Nv, Ns))
+        # seqID_matrix = zeros(Int8, Ns, Ns)
+        seqID = zeros(Float32, Ns)
+        weights = ones(Float32, Ns)
+
+        thread_count = nthreads(); chunk_size = div(Ns, thread_count)
+        println("threads used for computing weight: ", thread_count); flush(stdout)
+        
+        for i in 1:Ns
+            @threads :static for t in 1:thread_count
+                start_idx, end_idx, _ = index_interval(t, thread_count, chunk_size, Ns)
+                for j in start_idx:end_idx
+                    seqID[j] = (Nv - oneHotHammingDistance(sample_flat[:, i], sample_flat[:, j])) / Nv  
+                end
+            end
+            weights[i] = count(seqID .>= threshold)
+        end
+
+        GC.gc()
+        println(weights)
+        weights .= weights.^(-1)
+        Meff = sum(weights)
         weights_file = (label != nothing) ? outputpath*"/"*label*"_"*"weights.dat" : outputpath*"/weights.dat"
         file = open(weights_file, "w")
         for w in weights
