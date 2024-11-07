@@ -49,6 +49,19 @@
     end
 
 
+    function sampling_TD(J, vbias, contact_list, site_degree, v_model::BitArray{3}, nsweeps, method)
+        sampling_function = method == "metropolis" ? metropolis_sampling : gibbs_sampling
+        sampling_function_couplingwise = method == "metropolis" ? metropolis_sampling_couplingwise : gibbs_sampling_couplingwise
+        Nq, Nv, Ns = size(v_model) 
+        thread_count = nthreads(); chunk_size = div(Ns, thread_count)
+        @threads :dynamic for t in 1:thread_count
+            start_idx, end_idx, upper_s = index_interval(t, thread_count, chunk_size, Ns)
+            v_model[:, :, start_idx:end_idx] = sampling_function(J, vbias, v_model[:, :, start_idx:end_idx], nsweeps) 
+        end
+        return v_model
+    end
+
+
 
 
 # SAVE AND RESTORE MODEL ########################################################################################################################################################################
@@ -384,7 +397,108 @@
 
 
 
+    function TD_integration(datapath, alphabet, weights, nchains, nsweeps, outputpath, path_params, label, method, target_seq_path, intstep, theta_max)
+        model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
+        path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
+        # path_chains = (label != nothing) ? model_dir*"/"*label*"chains" : model_dir * "/chains"; (!isdir(path_chains)) ? mkdir(path_chains) : nothing
+        logfile = open(path_log, "w"); redirect_stdout(logfile)
 
+        inv_temp = 1
+        alphabet = set_alphabet(alphabet)
+        J, vbias, alphabet = restore_params_new(path_params)
+        (Nq, Nv) = size(vbias)
+        data = read_fasta2(datapath, alphabet)
+
+        target_seq = oneHotEncoding(permutedims(read_fasta2(target_seq_path, alphabet), [2, 1]), length(alphabet))[:,:,1]
+        filter, contact_list, site_degree = initialize_graph_couplingwise(J, Nq, Nv)
+       
+        println("sampling to thermalize at theta = 0..."); flush(stdout)
+        v = sampling_TD(J, vbias, contact_list, site_degree, sample_from_profile(vbias, nchains, inv_temp), 1_000, method)
+        
+        ave_ene = mean(compute_energy(J, vbias, v))
+        println("average energy sample theta 0: ", ave_ene)
+        println("sampling to thermalize at theta = MAX..."); flush(stdout)
+        vbias_theta_max = vbias + theta_max .* target_seq
+        v_max = sampling_TD(J, vbias_theta_max, contact_list, site_degree, sample_from_profile(vbias_theta_max, nchains, inv_temp), 100, method)
+        v2_max = reshape(v_max, (Nq*Nv, nchains))
+        hamm_dist_max = zeros(nchains)
+        for i in 1:nchains
+            hamm_dist_max[i] = oneHotHammingDistance(v2_max[:, i], reshape(target_seq, Nq*Nv))
+        end
+        p_wt = count(hamm_dist_max .== 0) / nchains
+        F_max = log(p_wt) + mean(compute_energy(J, vbias_theta_max, v_max[:, :, hamm_dist_max .== 0]))
+        println("F_theta_max = ", F_max)
+        seqID, F, S, integral = zeros(size(v, 3)), F_max, 0, 0
+        thetas = collect(range(0, theta_max, length=intstep))  
+        println("steps of integration: ", thetas)
+        factor = theta_max / (2*intstep)
+
+        t = @elapsed begin
+            i = 1
+            theta = thetas[i]
+            println("\n", i," theta : ", theta)
+            vbias_theta = Float32.(vbias +  theta .* target_seq)
+            v = sampling_TD(J, vbias_theta, contact_list, site_degree, v, nsweeps, method)
+            v2 = reshape(v, (Nq*Nv, nchains))
+            for i in 1:nchains
+                seqID[i] = Nv .- oneHotHammingDistance(v2[:, i], reshape(target_seq, Nq*Nv))
+            end
+                
+            integral += factor * mean(seqID) 
+            F += factor * mean(seqID) 
+            S = ave_ene - F
+            println("mean(seqID): ", mean(seqID))  
+            println("integral: ", integral)
+            println("F: ", F)
+            println("in itinere entropy: ", S)
+            GC.gc(); flush(stdout)
+        end
+        println("elapsed time: ", t)
+    
+        for theta in thetas[2:end-1]
+            t = @elapsed begin
+                i += 1
+                println("\n", i," theta : ", theta) 
+                vbias_theta = Float32.(vbias +  theta .* target_seq)
+                v = sampling_TD(J, vbias_theta, contact_list, site_degree, v, nsweeps, method)
+                v2 = reshape(v, (Nq*Nv, nchains))
+                for i in 1:nchains
+                    seqID[i] = Nv .- oneHotHammingDistance(v2[:, i], reshape(target_seq, Nq*Nv))
+                end
+                F +=  2 * factor * mean(seqID) 
+                integral +=  2 * factor * mean(seqID) 
+                S = ave_ene - F
+                println("mean(seqID): ", mean(seqID))
+                println("integral: ", integral)
+                println("F: ", F)
+                println("in itinere entropy: ", S)
+                GC.gc(); flush(stdout)
+            end
+            println("elapsed time: ", t)
+        end
+
+        t = @elapsed begin
+            i = intstep
+            println("\n", i," theta : ", thetas[i]) 
+            theta = thetas[i]
+            vbias_theta = Float32.(vbias +  theta .* target_seq)
+            v = sampling_TD(J, vbias_theta, contact_list, site_degree, v, nsweeps, method)
+            v2 = reshape(v, (Nq*Nv, nchains))
+            for i in 1:nchains
+                seqID[i] = Nv .- oneHotHammingDistance(v2[:, i], reshape(target_seq, Nq*Nv))
+            end
+            F += factor * mean(seqID) 
+            integral += factor * mean(seqID) 
+            S = ave_ene - F
+            println("mean(seqID): ", mean(seqID))
+            println("integral: ", integral) 
+            println("F: ", F) 
+            println("in itinere entropy: ", S) 
+            GC.gc(); flush(stdout)
+        end
+        println("elapsed time: ", t)
+        println("\nFinal Entropy: ", S) 
+    end
 
 
 
