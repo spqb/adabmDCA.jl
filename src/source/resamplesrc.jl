@@ -57,6 +57,7 @@
         @threads :dynamic for t in 1:thread_count
             start_idx, end_idx, upper_s = index_interval(t, thread_count, chunk_size, Ns)
             v_model[:, :, start_idx:end_idx] = sampling_function(J, vbias, v_model[:, :, start_idx:end_idx], nsweeps) 
+            GC.gc()
         end
         return v_model
     end
