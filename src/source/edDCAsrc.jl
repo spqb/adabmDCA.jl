@@ -160,7 +160,7 @@
         # decimation
         J, filter, contact_list, site_degree = do_decimation(J, pij_model, fij_natural, filter, contact_list, site_degree, th_d)
         # sampling with decimated model
-        v_model, _ = sampling(J, vbias, contact_list, site_degree, v_model, nsweeps, 0, true, method)
+        v_model, _ = sampling_ed(J, vbias, contact_list, site_degree, v_model, nsweeps, 0, true, method)
         GC.gc()
         return J, v_model, filter, contact_list, site_degree
     end
