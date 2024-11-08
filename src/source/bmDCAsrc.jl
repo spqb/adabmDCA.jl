@@ -184,7 +184,7 @@
         model_weights = ones(Float32, nchains)
         
         # initialize graph
-        filter, contact_list, site_degree = (graph != nothing) ? initialize_graph(read_graph(graph, Nv, Nq)[1], Nq, Nv) : initialize_graph(ones(Float32, Nq*Nv, Nq*Nv), Nq, Nv)
+        filter, contact_list, site_degree = (graph != nothing) ? initialize_graph(read_graph_new(graph, Nv, Nq)[1], Nq, Nv) : initialize_graph(ones(Float32, Nq*Nv, Nq*Nv), Nq, Nv)
         
         # epoch-0 statistics
         fij_natural = oneHotFijSymmFast(v_natural, natural_weights, pseudo_count) 
