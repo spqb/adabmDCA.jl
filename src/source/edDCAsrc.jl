@@ -234,6 +234,7 @@
 # FIT MODEL ########################################################################################################################################################################
 
     function fit_edDCA(datapath, path_params, path_chains, target_density, target_Cij, drate, lr, nsweeps, nchains, alphabet, weights, pseudo_count, nepochs, outputpath, max_conervgence_step, label, method, seed)
+        println("used threads: ", Threads.nthreads())
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
         path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
         logfile = open(path_log, "w"); redirect_stdout(logfile)

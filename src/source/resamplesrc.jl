@@ -169,6 +169,7 @@
 # RESAMPLE MODEL ########################################################################################################################################################################
 
     function sample_DCA(datapath, alphabet, weights, nchains, pseudo_count, nepochs, nsweeps, outputpath, path_params, nmeasure, nmix, mixing_time, label, showplot, seed, method)
+        println("used threads: ", Threads.nthreads())
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
         path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
         logfile = open(path_log, "w"); redirect_stdout(logfile)
@@ -263,6 +264,7 @@
 # IMPORTANCE SAMPLING
 
     function importance_sample_DCA(datapath, alphabet, weights, nchains, pseudo_count, nepochs, nsweeps, outputpath, path_params, nmeasure, nmix, mixing_time, label, showplot, seed, method, target_seq_path, theta)
+        println("used threads: ", Threads.nthreads())
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
         path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
         logfile = open(path_log, "w"); redirect_stdout(logfile)
@@ -399,6 +401,8 @@
 
 
     function TD_integration(datapath, alphabet, weights, nchains, nsweeps, outputpath, path_params, label, method, target_seq_path, intstep, theta_max)
+        println("used threads: ", Threads.nthreads())
+
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
         path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
         # path_chains = (label != nothing) ? model_dir*"/"*label*"chains" : model_dir * "/chains"; (!isdir(path_chains)) ? mkdir(path_chains) : nothing
