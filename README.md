@@ -76,6 +76,7 @@ If you use this package in your research, please cite:
 
 > Rosset, L., Netti, R., Muntoni, A.P., Weigt, M., & Zamponi, F. (2024). adabmDCA 2.0: A flexible but easy-to-use package for Direct Coupling Analysis.
 
+
 ## Acknowledgments
 
 This work was developed in collaboration with Sorbonne Université, Sapienza Università di Roma, and Politecnico di Torino.
