@@ -72,7 +72,8 @@ case "$COMMAND" in
     exec="contacts"
     ;;
   *)
-    echo "Error: Invalid command '$COMMAND'. Use 'train', 'decimate' or 'sample'."
+    echo "Error: Invalid command '$COMMAND'. Use 'train', 'decimate', 'sample', 'energies', 'DMS' or 'contacts'."
+
     exit 1
     ;;
 esac
