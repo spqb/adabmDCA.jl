@@ -504,14 +504,14 @@
             for i_v in randperm(Nv)
                 indices .= id(i_v, 1:Nq, Nq) # Nq indices of flat encoding corresponding to position i_v
                 energy .= vbias[:, i_v] .+ J[indices, :] * V  
-                w = exp.(inv_temp * energy)
+                w .= exp.(inv_temp * energy)
                 
                 for i_s in 1:Ns
                     V[indices, i_s] .= (all_v .== sample(Weights(w[:, i_s]))) # exp.(inv_temp * energy[:, i_s])
                 end
             end
+            GC.gc()
         end
-        GC.gc()
         return reshape(V, (Nq, Nv, Ns))
     end
 
