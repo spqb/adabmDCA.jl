@@ -592,7 +592,7 @@
         J, vbias, v_model, alphabet = restore_model_new(path_params, path_chains)
         energies = compute_energy(J, vbias, v_model)
         modified_fasta = modify_fasta_headers(path_chains, alphabet, v_model, energies)
-        open(outputpath, "w") do file
+        open(file_energy, "w") do file
             for line in modified_fasta
                 write(file, line)
             end
