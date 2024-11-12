@@ -437,7 +437,7 @@
         while p_wt <= 0.1
             theta_max = theta_max + 0.1 * theta_max
             println("Number of sequences collapsed to WT is less then 10%. Increasing theta max to: ", theta_max); flush(stdout)
-            vbias_theta_max = vbias + theta_max .* target_seq
+            vbias_theta_max = Float32.(vbias + theta_max .* target_seq)
             v_max = sampling_TD(J, vbias_theta_max, contact_list, site_degree, sample_from_profile(vbias_theta_max, nchains, inv_temp), 100, method)
             v2_max = reshape(v_max, (Nq*Nv, nchains))
             hamm_dist_max = zeros(nchains)
