@@ -7,12 +7,12 @@
         thread_count = nthreads(); chunk_size = div(Ns, thread_count)
         @threads :dynamic for t in 1:thread_count
                 start_idx, end_idx, upper_s = index_interval(t, thread_count, chunk_size, Ns)
-                useless1[:, :, start_idx:end_idx] = gibbs_sampling(J, vbias, useless1[:, :, start_idx:end_idx], nsweeps)
+                useless1[:, :, start_idx:end_idx] .= gibbs_sampling(J, vbias, useless1[:, :, start_idx:end_idx], nsweeps)
         end
         switch_time = @elapsed begin
             @threads :dynamic for t in 1:thread_count
                 start_idx, end_idx, upper_s = index_interval(t, thread_count, chunk_size, Ns)
-                useless2[:, :, start_idx:end_idx] = gibbs_sampling(J, vbias, v_model[:, :, start_idx:end_idx], nsweeps)
+                useless2[:, :, start_idx:end_idx] .= gibbs_sampling(J, vbias, v_model[:, :, start_idx:end_idx], nsweeps)
             end
         end
         return switch_time
@@ -30,7 +30,7 @@
             sampling_time = @elapsed begin
                 @threads :dynamic for t in 1:thread_count
                     start_idx, end_idx, upper_s = index_interval(t, thread_count, chunk_size, Ns)
-                    v_model[:, :, start_idx:end_idx] = sampling_function_couplingwise(J, vbias, v_model[:, :, start_idx:end_idx], contact_list, site_degree, nsweeps)
+                    v_model[:, :, start_idx:end_idx] .= sampling_function_couplingwise(J, vbias, v_model[:, :, start_idx:end_idx], contact_list, site_degree, nsweeps)
                 end
             end
             if switch_flag == false && sampling_time >= switch_time
@@ -42,7 +42,7 @@
         elseif switch_flag == true
             @threads :dynamic for t in 1:thread_count
                     start_idx, end_idx, upper_s = index_interval(t, thread_count, chunk_size, Ns)
-                    v_model[:, :, start_idx:end_idx] = sampling_function(J, vbias, v_model[:, :, start_idx:end_idx], nsweeps) 
+                    v_model[:, :, start_idx:end_idx] .= sampling_function(J, vbias, v_model[:, :, start_idx:end_idx], nsweeps) 
             end
         end
         return v_model, switch_flag
@@ -56,7 +56,7 @@
         thread_count = nthreads(); chunk_size = div(Ns, thread_count)
         @threads :dynamic for t in 1:thread_count
             start_idx, end_idx, upper_s = index_interval(t, thread_count, chunk_size, Ns)
-            v_model[:, :, start_idx:end_idx] = sampling_function(J, vbias, v_model[:, :, start_idx:end_idx], nsweeps) 
+            v_model[:, :, start_idx:end_idx] .= sampling_function(J, vbias, v_model[:, :, start_idx:end_idx], nsweeps) 
             GC.gc()
         end
         return v_model
@@ -417,12 +417,14 @@
         target_seq = oneHotEncoding(permutedims(read_fasta2(target_seq_path, alphabet), [2, 1]), length(alphabet))[:,:,1]
         filter, contact_list, site_degree = initialize_graph_couplingwise(J, Nq, Nv)
        
+        initial_sweeps = 1_000
         println("sampling to thermalize at theta = 0..."); flush(stdout)
-        v = sampling_TD(J, vbias, contact_list, site_degree, sample_from_profile(vbias, nchains, inv_temp), 1_000, method)
-        
+        println("(nsweeps = ", initial_sweeps, ")"); flush(stdout)
+        v = sampling_TD(J, vbias, contact_list, site_degree, sample_from_profile(vbias, nchains, inv_temp), initial_sweeps, method)
         ave_ene = mean(compute_energy(J, vbias, v))
         println("average energy sample theta 0: ", ave_ene)
-        println("sampling to thermalize at theta = MAX..."); flush(stdout)
+
+        println("sampling to thermalize at theta_max = ", theta_max); flush(stdout)
         vbias_theta_max = vbias + theta_max .* target_seq
         v_max = sampling_TD(J, vbias_theta_max, contact_list, site_degree, sample_from_profile(vbias_theta_max, nchains, inv_temp), 100, method)
         v2_max = reshape(v_max, (Nq*Nv, nchains))
@@ -430,12 +432,14 @@
         for i in 1:nchains
             hamm_dist_max[i] = oneHotHammingDistance(v2_max[:, i], reshape(target_seq, Nq*Nv))
         end
-        p_wt = count(hamm_dist_max .== 0) / nchains
+        n_wt = count(hamm_dist_max .== 0)
+        p_wt = n_wt / nchains
         F_max = log(p_wt) + mean(compute_energy(J, vbias_theta_max, v_max[:, :, hamm_dist_max .== 0]))
-        println("F_theta_max = ", F_max)
         seqID, F, S, integral = zeros(size(v, 3)), F_max, 0, 0
         thetas = collect(range(0, theta_max, length=intstep))  
-        println("steps of integration: ", thetas)
+        println(p_wt * 100, "% sequences collapse to wt")
+        println("F_theta_max = ", F_max)
+        # println("steps of integration: ", thetas)
         factor = theta_max / (2*intstep)
 
         t = @elapsed begin
