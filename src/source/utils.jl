@@ -511,6 +511,7 @@
                 end
             end
         end
+        Gc.gc()
         return reshape(V, (Nq, Nv, Ns))
     end
 
