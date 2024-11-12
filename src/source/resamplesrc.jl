@@ -435,7 +435,6 @@
         n_wt = count(hamm_dist_max .== 0)
         p_wt = n_wt / nchains
         println(p_wt * 100, "% sequences collapse to wt")
-        (p_wt <= 0.1) ? if 
         while p_wt <= 0.1
             theta_max = theta_max + 0.1 * theta_max
             println("Number of sequences collapsed to WT is less then 10%. Increasing theta max to: ", theta_max)
