@@ -238,6 +238,24 @@
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
         path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
         logfile = open(path_log, "w"); redirect_stdout(logfile)
+
+        println("\nInput arguments")
+        println("data: ", datapath)
+        println("weights: ", weights)
+        println("nchains: ", nchains)
+        println("max number of epochs: ", nepochs)
+        println("fraction of decimated parameters: ", drate)
+        println("pseudo_count: ", pseudo_count)
+        println("learning rate: ", lr)
+        println("nsweeps: ", nsweeps)
+        println("Pearson target: ", target_Cij)
+        println("density target: ", target_density)
+        (path_params != nothing) ? println("parameters path: ", path_params) : nothing
+        (path_chains != nothing) ? println("chains path: ", path_chains) : nothing
+        println("sampling method: ", method)
+        println("random seed: ", seed); flush(stdout)
+
+
         restore = (path_params != nothing && path_chains != nothing) ? true : false
         (restore == false && alphabet == nothing) ? error("Provide an alphabet") : nothing
         (restore == false && nchains == nothing) ? error("Provide nchains") : nothing

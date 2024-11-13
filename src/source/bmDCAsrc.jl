@@ -153,6 +153,24 @@
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
         path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
         logfile = open(path_log, "w"); redirect_stdout(logfile)
+
+        println("\nInput arguments")
+        println("data: ", datapath)
+        println("weights: ", weights)
+        println("nchains: ", nchains)
+        println("max number of epochs: ", nepochs)
+        println("pseudo_count: ", pseudo_count)
+        println("learning rate: ", lr)
+        println("nsweeps: ", nsweeps)
+        println("Pearson target: ", target)
+        (path_params != nothing) ? println("parameters path: ", path_params) : nothing
+        (path_chains != nothing) ? println("chains path: ", path_chains) : nothing
+        println("sampling method: ", method)
+        println("random seed: ", seed); flush(stdout)
+
+
+
+
         restore = (path_params != nothing && path_chains != nothing) ? true : false
         (restore == true) && (alphabet !== nothing) ? println("Warning: please make sure that the alphabet and parameters given are coherent.") : nothing
         (restore == false) && (alphabet == nothing) ? error("Provide an alphabet") : nothing

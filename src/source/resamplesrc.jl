@@ -172,6 +172,21 @@
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
         path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
         logfile = open(path_log, "w"); redirect_stdout(logfile)
+
+        println("\nInput arguments")
+        println("data: ", datapath)
+        println("weights: ", weights)
+        println("nchains: ", nchains)
+        println("nchains for mixing time: ", nmeasure)
+        println("max number of epochs: ", nepochs)
+        println("pseudo_count: ", pseudo_count)
+        println("nmix: ", nmix)
+        println("nsweeps: ", nsweeps)
+        (path_params != nothing) ? println("parameters path: ", path_params) : nothing
+        println("sampling method: ", method)
+        println("random seed: ", seed); flush(stdout)
+
+
         path_dec = (label != nothing) ? model_dir*"/"*label*"_autocorrelation.txt" : model_dir * "/autocorrelation.txt"
         decorr_file = open(path_dec, "w") 
         path_Cij = (label != nothing) ? model_dir*"/"*label*"_pearsonCij.txt" : model_dir * "/pearsonCij.txt"
@@ -267,6 +282,23 @@
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
         path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
         logfile = open(path_log, "w"); redirect_stdout(logfile)
+
+        println("\nInput arguments")
+        println("data: ", datapath)
+        println("weights: ", weights)
+        println("target sequence: ", target_seq_path)
+        println("theta integration: ", theta)
+        println("nchains: ", nchains)
+        println("nchains for mixing time: ", nmeasure)
+        println("max number of epochs: ", nepochs)
+        println("nmix: ", nmix)
+        println("nsweeps: ", nsweeps)
+        println("pseudo_count: ", pseudo_count)
+        (path_params != nothing) ? println("parameters path: ", path_params) : nothing
+        println("sampling method: ", method)
+        println("random seed: ", seed); flush(stdout)
+
+
         path_dec = (label != nothing) ? model_dir*"/"*label*"_autocorrelation.txt" : model_dir * "/autocorrelation.txt"
         decorr_file = open(path_dec, "w") 
         path_Cij = (label != nothing) ? model_dir*"/"*label*"_pearsonCij.txt" : model_dir * "/pearsonCij.txt"
@@ -404,8 +436,17 @@
 
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
         path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
-        # path_chains = (label != nothing) ? model_dir*"/"*label*"chains" : model_dir * "/chains"; (!isdir(path_chains)) ? mkdir(path_chains) : nothing
         logfile = open(path_log, "w"); redirect_stdout(logfile)
+
+        println("\nInput arguments")
+        println("data: ", datapath)
+        println("weights: ", weights)
+        println("target sequence: ", target_seq_path)
+        println("max theta integration: ", theta_max)
+        println("nchains: ", nchains)
+        println("nsweeps: ", nsweeps)
+        (path_params != nothing) ? println("parameters path: ", path_params) : nothing
+        println("sampling method: ", method)
 
         inv_temp = 1
         alphabet = set_alphabet(alphabet)
