@@ -281,6 +281,7 @@
                 println("epoch: ", epoch, " time: ", epoch_time, "\n"); flush(stdout)
                 (epoch % 50 == 0) ? save_model_chains_ed(J, vbias, filter, v_model, alphabet, outputpath, label) : nothing
                 if density <= target_density 
+                    println("last convergence step...")
                     J, v_model, pij_model = do_convergence_ed(J, vbias, filter, contact_list, site_degree, v_model, nsweeps, fij_natural, cij_natural, target_cij, lr, pseudo_count, max_conervgence_step, method)
                     break 
                 end
