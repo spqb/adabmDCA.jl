@@ -168,38 +168,6 @@
 
 # SAVE AND RESTORE MODEL ########################################################################################################################################################################
 
-    # function save_model(J, vbias, v_model, alphabet, save_list, sparsity, pearsonCij, outputpath)
-    #     Nq, Nv, Ns = size(v_model)
-    #     v_cat = oneHot2Categorical(v_model, Nq)
-    #     # save chains
-    #     code_density = string(round(sparsity, digits=3))
-    #     code_pearson = string(round(pearsonCij, digits=3))
-    #     file_chains = open(outputpath * "/trainingchains_density" * code_density * "_pearson" * code_pearson * ".fasta", "w")
-    #     for m in 1:Ns-1
-    #         head = ">chain $m\n"
-    #         line = "$(alphabet[v_cat[:, m]])\n"
-    #         write(file_chains, head); write(file_chains, line)
-    #     end
-    #     head = ">chain $Ns\n"; line = "$(alphabet[v_cat[:, Ns]])"
-    #     write(file_chains, head); write(file_chains, line)
-    #     close(file_chains)
-    #     # save model
-    #     file_model = open(outputpath * "/model_density" * code_density * "_pearson" * code_pearson * ".dat", "w")
-    #     for i in 1:Nv, j in i+1:Nv
-    #         for iq in 1:Nq, jq in 1:Nq
-    #         line = "J $(i-1) $(j-1) $(iq-1) $(jq-1) $(J[id(i, iq, Nq), id(j, jq, Nq)])\n"
-    #             write(file_model, line)
-    #         end
-    #     end
-    #     for i in 1:Nv, iq in 1:Nq
-    #         line = "h $(i-1) $(iq-1) $(vbias[iq, i])\n"
-    #         write(file_model, line)
-    #     end
-    #     close(file_model)
-    #     save_list = save_list[save_list .> 1-sparsity]
-    #     return save_list
-    # end
-
     function save_new_ed(J, vbias, filter, v_model, alphabet, save_list, nsave, density, outputpath, label, n_saved)
         Nq, Nv, Ns = size(v_model)
         v_cat = oneHot2Categorical(v_model, Nq)
@@ -308,19 +276,18 @@
                 density = sum(filter) / (2*tot_params)
                 cij_model = oneHotCijFast(v_model, model_weights, 0) 
                 pearsonCij, perasonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))
-                # if 1-density >= save_list[1]
-                #     save_list = save_new(J, vbias, filter, v_model, alphabet, save_list, nsave, density, outputpath, label, n_saved) 
-                #     n_saved += 1
-                # end
-                # save_list = (1-sparsity >= save_list[1]) ? save_new(J, vbias, filter, v_model, alphabet, save_list, pearsonCij, sparsity, outputpath, label) : save_list #save_model(J, vbias, v_model, alphabet, save_list, sparsity, pearsonCij, outputpath) : save_list
                 println("fraction of parameters: ", density); flush(stdout)
                 println("pearson Cij: ", pearsonCij, ", pearson Fi: ", perasonFi); flush(stdout)
                 println("epoch: ", epoch, " time: ", epoch_time, "\n"); flush(stdout)
                 (epoch % 50 == 0) ? save_model_chains_ed(J, vbias, filter, v_model, alphabet, outputpath, label) : nothing
-                (density <= target_density) ? break : nothing
+                if density <= target_density 
+                    J, v_model, pij_model = do_convergence_ed(J, vbias, filter, contact_list, site_degree, v_model, nsweeps, fij_natural, cij_natural, target_cij, lr, pseudo_count, max_conervgence_step, method)
+                    break 
+                end
             end
         end 
         println("training time: ", training_time); flush(stdout)
+        
         save_model_chains_ed(J, vbias, filter, v_model, alphabet, outputpath, label)
         close(logfile)
     end
