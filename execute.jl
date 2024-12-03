@@ -162,7 +162,7 @@ elseif args["model"] == "sample"
     sample_DCA(args["data"], args["alphabet"], args["weights"], args["nchains"], args["pseudocount"], args["nepochs"], args["nsweeps"], args["output"],  args["path_params"], args["nmeasure"], args["nmix"], args["no_mixingtime"], args["label"], args["showplot"], args["seed"], args["sampler"])
 
 elseif args["model"] == "energies"
-    compute_energy_from_fasta(args["path_params"], args["data"], args["output"])
+    compute_energy_from_fasta(args["path_params"], args["data"], args["output"], args["label"])
 
 elseif args["model"] == "DMS"
     compute_DMS_energies(args["path_params"], args["data"], args["output"]) 

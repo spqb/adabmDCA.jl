@@ -585,9 +585,9 @@
         return energy
     end
 
-    function compute_energy_from_fasta(path_params, path_chains, outputpath) 
+    function compute_energy_from_fasta(path_params, path_chains, outputpath, label) 
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
-        file_energy = model_dir * "/energies.fasta"
+        file_energy = (label != nothing) ? model_dir*"/"*label*"_"*"energies.fasta" : model_dir*"/energies.fasta"
         inv_temp = 1
         J, vbias, v_model, alphabet = restore_model_new(path_params, path_chains)
         energies = compute_energy(J, vbias, v_model)
@@ -597,7 +597,6 @@
                 write(file, line)
             end
         end
-        # close(logfile)
     end
 
 # DMS ENERGY ########################################################################################################################################################################
