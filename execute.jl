@@ -107,6 +107,10 @@ function parse_commandline()
             arg_type = Int
             default = 10000
             help = "(Defaults to 10000). Maximum number of convergence step."
+        "--target_densities"
+            arg_type = String
+            default = nothing
+            help = "(Defaults to nothing). Array containing target densities"
 
         # sample
         "--no_mixingtime"
@@ -156,7 +160,7 @@ elseif args["model"] == "eaDCA"
     fit_eaDCA(args["data"], args["alphabet"], args["weights"], args["nchains"], args["factivate"],args["pseudocount"], args["lr"], args["nepochs"], args["nsweeps"], args["gsteps"], args["output"], args["target"], args["path_params"], args["path_chains"], args["label"], args["sampler"], args["seed"])
 
 elseif args["model"] == "edDCA"
-    fit_edDCA(args["data"], args["path_params"], args["path_chains"], args["density"],  args["target"], args["drate"], args["lr"], args["nsweeps"], args["nchains"], args["alphabet"], args["weights"], args["pseudocount"], args["nepochs"], args["output"], args["max_convergence_step"], args["label"], args["sampler"], args["seed"])
+    fit_edDCA(args["data"], args["path_params"], args["path_chains"], args["density"],  args["target"], args["drate"], args["lr"], args["nsweeps"], args["nchains"], args["alphabet"], args["weights"], args["pseudocount"], args["nepochs"], args["output"], args["max_convergence_step"], args["label"], args["sampler"], args["seed"], args["target_densities"])
 
 elseif args["model"] == "sample"
     sample_DCA(args["data"], args["alphabet"], args["weights"], args["nchains"], args["pseudocount"], args["nepochs"], args["nsweeps"], args["output"],  args["path_params"], args["nmeasure"], args["nmix"], args["no_mixingtime"], args["label"], args["showplot"], args["seed"], args["sampler"])

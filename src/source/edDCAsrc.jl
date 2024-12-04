@@ -201,11 +201,18 @@
 
 # FIT MODEL ########################################################################################################################################################################
 
-    function fit_edDCA(datapath, path_params, path_chains, target_density, target_Cij, drate, lr, nsweeps, nchains, alphabet, weights, pseudo_count, nepochs, outputpath, max_convergence_step, label, method, seed)
+    function fit_edDCA(datapath, path_params, path_chains, target_density, target_Cij, drate, lr, nsweeps, nchains, alphabet, weights, pseudo_count, nepochs, outputpath, max_convergence_step, label, method, seed, target_densities)
         println("used threads: ", Threads.nthreads())
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
         path_log = (label != nothing) ? model_dir*"/"*label*"_adabmDCA.log" : model_dir * "/adabmDCA.log"
         logfile = open(path_log, "w"); redirect_stdout(logfile)
+        
+        
+
+        if target_densities != nothing
+            target_densities = parse.(Float64, split(target_densities))
+            println("target_densities: ", target_densities)
+        end
 
         println("\nInput arguments")
         println("data: ", datapath)
@@ -273,6 +280,7 @@
                 epoch_time = @elapsed begin                
                     J, v_model, filter, contact_list, site_degree = do_epoch(J, vbias, filter, contact_list, site_degree, v_model, fij_natural, cij_natural, target_Cij, lr, nsweeps, pseudo_count, drate, max_convergence_step, method) 
                 end
+
                 density = sum(filter) / (2*tot_params)
                 cij_model = oneHotCijFast(v_model, model_weights, 0) 
                 pearsonCij, perasonFi = cor(vec(cij_model), vec(cij_natural)), cor(vec(fi_natural), vec(fi_model))
@@ -280,11 +288,30 @@
                 println("pearson Cij: ", pearsonCij, ", pearson Fi: ", perasonFi); flush(stdout)
                 println("epoch: ", epoch, " time: ", epoch_time, "\n"); flush(stdout)
                 (epoch % 50 == 0) ? save_model_chains_ed(J, vbias, filter, v_model, alphabet, outputpath, label) : nothing
+                
+                
+
+                if target_densities != nothing
+                    if density <= target_densities[1]
+                        println("first step of density reached - density: ", target_densities[1])
+                        println("last convergence step...")
+                        J, v_model, pij_model = do_convergence_ed(J, vbias, filter, contact_list, site_degree, v_model, nsweeps, fij_natural, cij_natural, target_Cij, lr, pseudo_count, max_convergence_step, method)
+                        save_model_chains_ed(J, vbias, filter, v_model, alphabet, outputpath, "density="*string(target_densities[1])) 
+                        if length(target_densities) == 1
+                            break
+                        else
+                            target_densities = target_densities[2:end]
+                        end
+                    end
+                end
+
+
                 if density <= target_density 
                     println("last convergence step...")
                     J, v_model, pij_model = do_convergence_ed(J, vbias, filter, contact_list, site_degree, v_model, nsweeps, fij_natural, cij_natural, target_Cij, lr, pseudo_count, max_convergence_step, method)
                     break 
                 end
+
             end
         end 
         println("training time: ", training_time); flush(stdout)
