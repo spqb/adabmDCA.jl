@@ -180,5 +180,5 @@ elseif args["model"] == "contacts"
 elseif args["model"] == "importance_sample"
     importance_sample_DCA(args["data"], args["alphabet"], args["weights"], args["nchains"], args["pseudocount"], args["nepochs"], args["nsweeps"], args["output"],  args["path_params"], args["nmeasure"], args["nmix"], args["no_mixingtime"], args["label"], args["showplot"], args["seed"], args["sampler"], args["targetseq"], args["theta"])
 elseif args["model"] == "TD_integration"
-    TD_integration(args["data"], args["alphabet"], args["weights"], args["nchains"], args["nsweeps"], args["output"],  args["path_params"], args["label"], args["sampler"], args["targetseq"], args["intstep"], args["theta"])
+    TD_integration(args["data"], args["alphabet"], args["weights"], args["nchains"], args["nsweeps"], args["output"],  args["path_params"], args["path_chains"], args["label"], args["sampler"], args["targetseq"], args["intstep"], args["theta"])
 end

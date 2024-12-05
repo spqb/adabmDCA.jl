@@ -431,7 +431,7 @@
 
 
 
-    function TD_integration(datapath, alphabet, weights, nchains, nsweeps, outputpath, path_params, label, method, target_seq_path, intstep, theta_max)
+    function TD_integration(datapath, alphabet, weights, nchains, nsweeps, outputpath, path_params, path_chains, label, method, target_seq_path, intstep, theta_max)
         println("used threads: ", Threads.nthreads())
 
         model_dir = outputpath; (!isdir(model_dir)) ? mkdir(model_dir) : nothing
@@ -460,7 +460,10 @@
         initial_sweeps = 1_000
         println("sampling to thermalize at theta = 0..."); flush(stdout)
         println("(nsweeps = ", initial_sweeps, ")"); flush(stdout)
-        v = sampling_TD(J, vbias, contact_list, site_degree, sample_from_profile(vbias, nchains, inv_temp), initial_sweeps, method)
+        println("initializing chains for theta = 0 ..."); flush(stdout)
+        chains_0 = (path_chains != nothing) ? oneHotEncoding(permutedims(read_fasta2(path_chains, alphabet), [2, 1]), length(alphabet)) : sample_from_profile(vbias, nchains, inv_temp)
+        println("size of chains_0 :", size(chains_0)); flush(stdout)
+        v = sampling_TD(J, vbias, contact_list, site_degree, chains_0, initial_sweeps, method)
         ave_ene = mean(compute_energy(J, vbias, v))
         println("average energy sample theta 0: ", ave_ene)
 
