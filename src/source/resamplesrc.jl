@@ -461,7 +461,8 @@
         println("sampling to thermalize at theta = 0..."); flush(stdout)
         println("(nsweeps = ", initial_sweeps, ")"); flush(stdout)
         println("initializing chains for theta = 0 ..."); flush(stdout)
-        chains_0 = (path_chains != nothing) ? oneHotEncoding(permutedims(read_fasta2(path_chains, alphabet), [2, 1]), length(alphabet)) : sample_from_profile(vbias, nchains, inv_temp)
+
+        chains_0 = (path_chains != nothing) ? oneHotEncoding(permutedims(read_fasta2(path_chains, alphabet), [2, 1]), length(alphabet))[:, :, 1:nchains] : sample_from_profile(vbias, nchains, inv_temp)
         println("size of chains_0 :", size(chains_0)); flush(stdout)
         v = sampling_TD(J, vbias, contact_list, site_degree, chains_0, initial_sweeps, method)
         ave_ene = mean(compute_energy(J, vbias, v))
