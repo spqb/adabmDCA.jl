@@ -40,8 +40,31 @@ Open a terminal in the desired folder, and run the following commands:
    # Install ArgParse and adabmDCA.jl from the GitHub repo
    julia --eval 'using Pkg; Pkg.add("ArgParse"); Pkg.add(PackageSpec(url="https://github.com/spqb/adabmDCA.jl"))'
    ```
-
 This will install all necessary dependencies and set up the package.
+
+Here’s the refined text for your README:
+
+---
+
+If you want to use the simpler `adabmDCA` command instead of typing `./adabmDCA.sh`, you can create an alias in your shell configuration file. Add the following line to your `~/.bashrc` (or `~/.zshrc` for Zsh):
+
+```bash
+alias adabmDCA="$(pwd)/adabmDCA.sh"
+```
+
+Then, reload your shell configuration:
+
+```bash
+source ~/.bashrc  # Use this for Bash
+# source ~/.zshrc  # Use this for Zsh
+```
+
+**Note:** You need to be in the same directory as the `adabmDCA.sh` and `execute.jl` files when creating the alias, as the command uses the current folder path.
+
+---
+
+Feel free to copy and paste it into your README! 😊
+
 
 ### Option 2: Manual Installation via Julia
 
