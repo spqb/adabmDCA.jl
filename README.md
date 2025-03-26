@@ -87,8 +87,7 @@ This will set up the package for use.
 
 ## Usage
 
-To get started with adabmDCA in Julia, please refer to the [documentation](https://spqb.github.io/adabmDCApy/) or the [tutorials](https://github.com/spqb/adabmDCA.jl/tree/main/tutorials) for detailed examples of how to apply DCA to real-world protein and RNA datasets.
-
+To get started with adabmDCA in Julia, please refer to the [documentation](https://spqb.github.io/adabmDCApy/).
 ## License
 
 This package is open-sourced under the MIT License.
