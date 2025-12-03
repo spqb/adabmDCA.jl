@@ -2,7 +2,7 @@
 
 # Check if the first positional argument is provided
 if [ -z "$1" ]; then
-  echo "Error: No command provided. Use 'train', 'decimate' or 'sample'."
+  echo "Error: No command provided. Use 'train', 'sample', 'energies', 'DMS', or 'contacts'."
   exit 1
 fi
 
@@ -72,7 +72,7 @@ case "$COMMAND" in
     exec="contacts"
     ;;
   *)
-    echo "Error: Invalid command '$COMMAND'. Use 'train', 'decimate', 'sample', 'energies', 'DMS' or 'contacts'."
+    echo "Error: Invalid command '$COMMAND'. Use 'train', 'sample', 'energies', 'DMS', or 'contacts'."
 
     exit 1
     ;;
