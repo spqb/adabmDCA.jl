@@ -343,7 +343,6 @@
         end
 
         GC.gc()
-        println(weights)
         weights .= weights.^(-1)
         Meff = sum(weights)
         weights_file = (label != nothing) ? outputpath*"/"*label*"_"*"weights.dat" : outputpath*"/weights.dat"
