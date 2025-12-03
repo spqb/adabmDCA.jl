@@ -438,6 +438,7 @@
 
     function initialize_graph_couplingwise(J, Nq, Nv)
         filter, contact_list, site_degree = (J .!= 0), zeros(Int64, Nv*Nq, Nv*Nq), zeros(Int64, Nv*Nq)
+        println("J size: ", size(J), "Nq: ", Nq, " Nv: ", Nv); flush(stdout)
         for iq in 1:Nv*Nq, jq in iq+1:Nv*Nq
             if filter[iq, jq] != 0 
                 site_degree[iq] += 1; site_degree[jq] += 1
